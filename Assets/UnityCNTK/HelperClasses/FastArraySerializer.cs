@@ -11,6 +11,7 @@ public static unsafe class FastArraySerializer
     {
         [FieldOffset(0)] public byte[] bytes;
         [FieldOffset(0)] public float[] floats;
+        [FieldOffset(0)] public sbyte[] int8s;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -22,14 +23,17 @@ public static unsafe class FastArraySerializer
 
     private static readonly UIntPtr BYTE_ARRAY_TYPE;
     private static readonly UIntPtr FLOAT_ARRAY_TYPE;
+    private static readonly UIntPtr INT8_ARRAY_TYPE;
 
     static FastArraySerializer()
     {
         fixed (void* pBytes = new byte[1])
         fixed (void* pFloats = new float[1])
+        fixed (void* pInt8s = new sbyte[1])
         {
             BYTE_ARRAY_TYPE = getHeader(pBytes)->type;
             FLOAT_ARRAY_TYPE = getHeader(pFloats)->type;
+            INT8_ARRAY_TYPE = getHeader(pInt8s)->type;
         }
     }
 
@@ -67,6 +71,24 @@ public static unsafe class FastArraySerializer
         }
     }
 
+    public static void AsInt8Array(this byte[] bytes, Action<sbyte[]> action)
+    {
+        if (bytes.handleNullOrEmptyArray(action))
+            return;
+
+        var union = new Union { bytes = bytes };
+        union.bytes.toFloatArray();
+        try
+        {
+            action(union.int8s);
+        }
+        finally
+        {
+            union.int8s.toByteArray();
+        }
+    }
+
+
     public static bool handleNullOrEmptyArray<TSrc, TDst>(this TSrc[] array, Action<TDst[]> action)
     {
         if (array == null)
@@ -99,6 +121,30 @@ public static unsafe class FastArraySerializer
             pHeader->length = (UIntPtr)(bytes.Length / sizeof(float));
         }
     }
+
+    private static void toInt8Array(this byte[] bytes)
+    {
+        fixed (void* pArray = bytes)
+        {
+            var pHeader = getHeader(pArray);
+
+            pHeader->type = INT8_ARRAY_TYPE;
+            pHeader->length = (UIntPtr)(bytes.Length / sizeof(sbyte));
+        }
+    }
+
+    private static void toByteArray(this sbyte[] int8s)
+    {
+        fixed (void* pArray = int8s)
+        {
+            var pHeader = getHeader(pArray);
+
+            pHeader->type = BYTE_ARRAY_TYPE;
+            pHeader->length = (UIntPtr)(int8s.Length * sizeof(sbyte));
+        }
+    }
+
+
 
     private static void toByteArray(this float[] floats)
     {
