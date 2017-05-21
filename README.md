@@ -1,4 +1,4 @@
-# DeepUnity
+# UnityCNTK
 #### Deep learning package for Unity, backed by CNTK
 ##### Unslash your creativity 
 #### Windows only for now, Linux will likely come soon, can't say the same for OSX 
@@ -25,3 +25,7 @@
 ### Technical Background
 This section is dedicated for those who want to understand the models that come with
 this problem.
+
+### Donation
+if you wnat to support us
+we do accept beer via [Paypal](https://paypal.me/Speculy)
