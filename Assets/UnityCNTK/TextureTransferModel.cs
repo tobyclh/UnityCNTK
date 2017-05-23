@@ -24,13 +24,12 @@ namespace UnityCNTK
             LoadModel();
         }
 
-
+        
 
         public Texture2D CreateStylizedImage(Texture2D source, Texture2D style)
         {
-            var srcValue = Convert.ToValue(source, false);
-            var styleValue = Convert.ToValue(style, false);
-
+            var srcValue = new List<Texture2D>(){source}.ToValue(false); 
+            var styleValue = new List<Texture2D>(){style}.ToValue(false);;
             Texture2D outputTexture = new Texture2D(source.width, source.height);
             // outputTexture.SetPixels(colorArray);
             return outputTexture;
@@ -47,6 +46,9 @@ namespace UnityCNTK
         // Background thread that does the heavy lifting
         public void NeuralAlgorithmOfArtisticStlyeImproved(Value source, Value style)
         {
+            float decay = 0.5f;
+
+
             var inputVar = model.Arguments.Single();
             var inputDataMap = new Dictionary<Variable, Value>();
             inputDataMap.Add(inputVar, source);
@@ -60,6 +62,7 @@ namespace UnityCNTK
             model.Evaluate(inputDataMap, outputDataMap, DeviceDescriptor.CPUDevice);
             // Get output result
             Value outputVal = outputDataMap[outputVar];
+            
             var outputData = outputVal.GetDenseData<float>(outputVar);
             Color[] colorArray = new Color[source.Shape.GetDimensionSize(1) * source.Shape.GetDimensionSize(2)];
             for (int i = 0; i < source.Shape.GetDimensionSize(1) * source.Shape.GetDimensionSize(2); i++)
@@ -73,6 +76,7 @@ namespace UnityCNTK
 
         }
 
+        
 
 
 
