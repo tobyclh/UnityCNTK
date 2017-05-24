@@ -11,6 +11,5 @@ namespace UnityCNTK
     public class Model : ScriptableObject
     {   
         public Function function;
-        public System.DateTime CreatedTime;
     }
 }
