@@ -13,9 +13,15 @@ namespace UnityCNTK
         public Texture2D textureReference;
         
         public string namingRules;
-        public Texture2D ApplyFunctionTexture2D()
+
+        public override void Evaluate()
         {
-            throw new NotImplementedException("DO IT NOW");
+            throw new NotImplementedException();
+        }
+
+        public override void LoadModel()
+        {
+            throw new NotImplementedException();
         }
     }
 }

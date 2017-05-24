@@ -16,7 +16,9 @@ namespace UnityCNTK
         public string relativeModelPath = @"Assets\UnityCNTK\Model\VGG.dnn";
 
         public Texture2D styleRef;
-        public Texture2D src;
+
+        public new IEnumerable<Texture2D> input;
+        public new IEnumerable<Texture2D> output;
         // Use this for initialization
         Function model;
         void Start()
@@ -24,23 +26,23 @@ namespace UnityCNTK
             LoadModel();
         }
 
-        
-
-        public Texture2D CreateStylizedImage(Texture2D source, Texture2D style)
+        public override void Evaluate()
         {
-            var srcValue = new List<Texture2D>(){source}.ToValue(false); 
-            var styleValue = new List<Texture2D>(){style}.ToValue(false);;
-            Texture2D outputTexture = new Texture2D(source.width, source.height);
+            input.ToValue(false);
+            var styleValue = new List<Texture2D>() { styleRef }.ToValue(false);
+            List<Texture2D> textures = new List<Texture2D>();
+            Texture2D outputTexture = new Texture2D(input.FirstOrDefault().width, input.FirstOrDefault().height);
             // outputTexture.SetPixels(colorArray);
-            return outputTexture;
+            output = textures;
+            
         }
         /// Load model into function, download if not exist
 
-        private void LoadModel()
+        public override void LoadModel()
         {
             var absolutePath = System.IO.Path.Combine(Environment.CurrentDirectory, relativeModelPath);
             Downloader.DownloadPretrainedModel(Downloader.pretrainedModel.VGG16, absolutePath);
-            model = Function.LoadModel(absolutePath, DeviceDescriptor.GPUDevice(0));
+            
         }
 
         // Background thread that does the heavy lifting
@@ -48,7 +50,7 @@ namespace UnityCNTK
         {
             float decay = 0.5f;
 
-
+            
             var inputVar = model.Arguments.Single();
             var inputDataMap = new Dictionary<Variable, Value>();
             inputDataMap.Add(inputVar, source);
@@ -62,23 +64,17 @@ namespace UnityCNTK
             model.Evaluate(inputDataMap, outputDataMap, DeviceDescriptor.CPUDevice);
             // Get output result
             Value outputVal = outputDataMap[outputVar];
-            
-            var outputData = outputVal.GetDenseData<float>(outputVar);
-            Color[] colorArray = new Color[source.Shape.GetDimensionSize(1) * source.Shape.GetDimensionSize(2)];
-            for (int i = 0; i < source.Shape.GetDimensionSize(1) * source.Shape.GetDimensionSize(2); i++)
-            {
-                var color = colorArray[i];
-                color.r = outputData[0][i];
-                color.g = outputData[1][i];
-                color.b = outputData[2][i];
-            }
-            
+            var texture = Convert.ToTexture2D(outputVal, outputVar);
 
         }
 
+        public double[] ObjectiveFunction()
+        {
+            
+            return new double[2];
+        }
+
         
-
-
 
     }
 
