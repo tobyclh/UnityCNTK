@@ -51,18 +51,35 @@ namespace UnityCNTK
         // Parameters:
         //   value: sadasda
 
-        public static List<Texture2D> ToTexture2D(this Value value)
+        public static List<Texture2D> ToTexture2D(Value value, Variable variable)
         {
             List<Texture2D> texs = new List<Texture2D>();
             var dimemsions = value.Shape.Dimensions;
-            for (int i = 0; i < dimemsions[3]; i++)
+            var lists = value.GetDenseData<float>(variable);
+            var rawTextures = from list in lists
+                    select list.AsParallel().ToArray();
+            List<Color[]> textureColor = new List<Color[]>(); 
+            if(dimemsions[0] == 4)
+            {
+
+            }
+            else if (dimemsions[0] == 3)
+            {
+
+            }
+            else
+            {
+                throw new ApplicationException("the rawtexture should be RGB / ARGB");
+            }
+            for (int i = 0; i < rawTextures.Count(); i++)
             {
                 Texture2D texture = new Texture2D(dimemsions[1], dimemsions[2]);
-                
+                  
             }
             return texs;
         }
 
+        
     }
 
 }
