@@ -14,7 +14,7 @@ namespace UnityCNTK
         
         public string namingRules;
 
-        public override void Evaluate()
+        public override void Evaluate(DeviceDescriptor device)
         {
             throw new NotImplementedException();
         }
