@@ -13,36 +13,37 @@ namespace UnityCNTK
     //Simple 
     public static class Convert
     {
-        public static Value ToValue(this IEnumerable<Texture2D> textures, DeviceDescriptor device, bool useAlpha = false)
+        public static Value ToValue(this IEnumerable<Texture2D> textures, DeviceDescriptor device)
         {
+            bool useAlpha = textures.First().GetPixel(0, 0).a == 0 ? true : false;
             Assert.AreNotEqual(textures.Count(), 0);
             List<float> list = new List<float>();
             int tensorWidth = textures.FirstOrDefault().width;
             int tensorHeight = textures.FirstOrDefault().height;
             NDShape shape = NDShape.CreateNDShape(new int[] { tensorWidth, tensorHeight, useAlpha ? 4 : 3 });
             int channelPixelCount = tensorHeight * tensorWidth;
-            Parallel.For(0,  textures.Count(), (int batchNum) =>
-            {
-                Assert.AreEqual(textures.ElementAt(batchNum).width, tensorWidth);
-                Assert.AreEqual(textures.ElementAt(batchNum).height, tensorHeight);
-                var pixels = textures.ElementAt(batchNum).GetPixels();
-                var pixelArray = new float[tensorHeight* tensorWidth* (useAlpha ? 4 : 3)];
-                Parallel.For(0,  (useAlpha ? 4 : 3)-1, (int c) =>
-                {
-                    for(int i = 0; i < tensorHeight* tensorWidth; i++)
-                    {
-                        pixelArray[i+c] = pixels[i][c];
-                    }
-                });
-                list.AddRange(pixelArray);
-            });
+            Parallel.For(0, textures.Count(), (int batchNum) =>
+           {
+               Assert.AreEqual(textures.ElementAt(batchNum).width, tensorWidth);
+               Assert.AreEqual(textures.ElementAt(batchNum).height, tensorHeight);
+               var pixels = textures.ElementAt(batchNum).GetPixels();
+               var pixelArray = new float[tensorHeight * tensorWidth * (useAlpha ? 4 : 3)];
+               Parallel.For(0, (useAlpha ? 4 : 3) - 1, (int c) =>
+                 {
+                   for (int i = 0; i < tensorHeight * tensorWidth; i++)
+                   {
+                       pixelArray[i + c] = pixels[i][c];
+                   }
+               });
+               list.AddRange(pixelArray);
+           });
             return Value.CreateBatch(shape, list, device, false);
         }
 
 
 
         // Convert the main texturue of the material to texture
-        public static Value ToValue(this IEnumerable<Material> mats, DeviceDescriptor device,bool useAlpha = false)
+        public static Value ToValue(this IEnumerable<Material> mats, DeviceDescriptor device)
         {
             IEnumerable<Texture2D> textures = mats.Select(x => x.mainTexture as Texture2D);
             return textures.ToValue(device);
@@ -55,17 +56,17 @@ namespace UnityCNTK
             var lists = value.GetDenseData<float>(variable);
             var rawTextures = from list in lists.AsParallel()
                               select list.ToArray();
-            if(value.Shape.TotalSize % dimemsions[0]*dimemsions[1]*dimemsions[2] != 0) throw new ApplicationException("Size unmatch");
-            else if(dimemsions[2] != 3 && dimemsions[2] != 4) throw new ApplicationException("Image must be 3 / 4 dimension");
+            if (value.Shape.TotalSize % dimemsions[0] * dimemsions[1] * dimemsions[2] != 0) throw new ApplicationException("Size unmatch");
+            else if (dimemsions[2] != 3 && dimemsions[2] != 4) throw new ApplicationException("Image must be 3 / 4 dimension");
             Parallel.For(0, rawTextures.Count(), (int t) =>
             {
-                Color[] pixels = new Color[dimemsions[0]*dimemsions[1]*dimemsions[2]];
+                Color[] pixels = new Color[dimemsions[0] * dimemsions[1] * dimemsions[2]];
                 pixels.Initialize();
                 Parallel.For(0, dimemsions[2], (int c) =>
                 {
-                    for(int i = 0; i < dimemsions[0]*dimemsions[1]; i++)
+                    for (int i = 0; i < dimemsions[0] * dimemsions[1]; i++)
                     {
-                        pixels[i][c] = rawTextures.ElementAt(t)[i+c];
+                        pixels[i][c] = rawTextures.ElementAt(t)[i + c];
                     }
                 });
 
@@ -109,13 +110,13 @@ namespace UnityCNTK
                     data2[x + y * targetWidth] = Color.Lerp(Color.Lerp(c11, c12, p.y), Color.Lerp(c21, c22, p.y), p.x);
                 }
             }
-    
+
             var tex = new Texture2D(targetWidth, targetHeight);
             tex.SetPixels32(data2);
             tex.Apply(true);
             return tex;
         }
-    
+
     }
 
 }
