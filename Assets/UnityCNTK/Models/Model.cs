@@ -19,6 +19,7 @@ namespace UnityCNTK
         public IConvertible input;
         public IConvertible output;
         public Thread thread; 
+        public bool KeepModelLoaded = false;
         public abstract void LoadModel();
 
         public abstract void Evaluate(DeviceDescriptor device);
