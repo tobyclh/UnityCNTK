@@ -16,6 +16,7 @@
 *.booproj
 *.meta
 *.model
+*.dll
 
 # Unity3D generated meta files
 *.pidb.meta
