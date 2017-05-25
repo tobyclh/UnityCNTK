@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEditor;
 using CNTK;
 using System.Timers;
+using System.Threading;
 using CNTK;
 namespace UnityCNTK
 {
@@ -15,13 +16,14 @@ namespace UnityCNTK
     public abstract class Model : ScriptableObject
     {   
         public Function function;
-        
-
-        public Object input;
-        public Object output;
+        public IConvertible input;
+        public IConvertible output;
+        public Thread thread; 
         public abstract void LoadModel();
 
         public abstract void Evaluate(DeviceDescriptor device);
+
+        public abstract void OnEvaluated();
 
     }
 
