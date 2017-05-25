@@ -6,20 +6,29 @@ using System.Collections.Generic;
 using System.IO;
 using UnityCNTK;
 using System.Net;
-using System.Threading;
+using System.Threading; 
+using Accord.Math.Optimization;
+using Microsoft.MSR.CNTK.Extensibility.Managed;
 namespace UnityCNTK
 {
     public class TextureTransferModel : Model
     {
         /* The implementation is a C# version of the original implementation found in https://github.com/Microsoft/CNTK/blob/master/Tutorials/CNTK_205_Artistic_Style_Transfer.ipynb
-        This is by no mean the optimized version*/
+        This example shows the limitation of the evaluation API, that deviation of parameter cannot be accessed. Therefore, in terms of 
+        optimisation this script adopts a gradient free optimisation, using Accord
+        
+
+        */
+ 
         public string relativeModelPath = "Assets/UnityCNTK/Model/VGG.dnn";
 
         public Texture2D styleRef;
-
         public new IEnumerable<Texture2D> input;
         public new IEnumerable<Texture2D> output;
 
+        public double contentWeight = 5;
+        public double styleWeight = 1;
+        public double decay = 0.5f;
         // Use this for initialization
         void Start()
         {
@@ -29,47 +38,28 @@ namespace UnityCNTK
         public override void Evaluate(DeviceDescriptor device)
         {
             input.ToValue(device, false);
-            var shape = function.Arguments.Single().Shape;
-            styleRef.ResampleAndCrop(shape[0], shape[1]);
-            foreach(var img in input)
-            {
-                img.ResampleAndCrop(shape[0], shape[1]);
-            }
-            var styleValue = new List<Texture2D>() { styleRef }.ToValue(device, false);
+            var styleVar = function.Arguments[0];
+            var shape = styleVar.Shape;
+            var resizedStyle = styleRef.ResampleAndCrop(shape[0], shape[1]);
+            var outputVar = function.Output;
+            var styleValue = new List<Texture2D>() { resizedStyle }.ToValue(device, false);
+            var inputDataMap = new Dictionary<Variable, Value>(){{styleVar, styleValue}};
+            var outputDataMap = new Dictionary<Variable, Value>(){{outputVar,null}};
+            function.Evaluate(inputDataMap, outputDataMap, device);  
             List<Texture2D> textures = new List<Texture2D>();
+            // function.Evaluate(new Dictionary<Variable, Value>().Add(inputVar,))   
             Texture2D outputTexture = new Texture2D(input.FirstOrDefault().width, input.FirstOrDefault().height);
             output = textures;
+            
         }
 
         public override void LoadModel()
         {
             var absolutePath = System.IO.Path.Combine(Environment.CurrentDirectory, relativeModelPath);
-            Downloader.DownloadPretrainedModel(Downloader.pretrainedModel.VGG16, absolutePath);
-            
+            // Downloader.DownloadPretrainedModel(Downloader.pretrainedModel.VGG16, absolutePath);
         }
 
         // Background thread that does the heavy lifting
-        public void NeuralAlgorithmOfArtisticStlyeImproved(Value source, Value style)
-        {
-            float decay = 0.5f;
-
-            
-            var inputVar = function.Arguments.Single();
-            var inputDataMap = new Dictionary<Variable, Value>();
-            inputDataMap.Add(inputVar, source);
-            // Prepare output
-            Variable outputVar = function.Output;
-
-            var outputDataMap = new Dictionary<Variable, Value>();
-            outputDataMap.Add(outputVar, null);
-
-            // Evaluate the model.
-            function.Evaluate(inputDataMap, outputDataMap, DeviceDescriptor.CPUDevice);
-            // Get output result
-            Value outputVal = outputDataMap[outputVar];
-            var texture = Convert.ToTexture2D(outputVal, outputVar);
-
-        }
 
         public double[] ObjectiveFunction()
         {
@@ -77,6 +67,7 @@ namespace UnityCNTK
             return new double[2];
         }
 
+        
         
 
     }
