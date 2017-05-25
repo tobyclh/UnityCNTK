@@ -33,9 +33,9 @@ namespace UnityCNTK
         };
 
 
-        public static void DownloadPretrainedModel(pretrainedModel model, string absolutePath)
+        public static void DownloadPretrainedModel(pretrainedModel model, string relativePath)
         {
-            string modelPath = System.IO.Path.Combine(Environment.CurrentDirectory, absolutePath);
+            string modelPath = System.IO.Path.Combine(Environment.CurrentDirectory, relativePath);
             if (!File.Exists(modelPath))
             {
                 using (var client = new WebClient())
@@ -43,13 +43,19 @@ namespace UnityCNTK
                     var modelURL = modelHost[model];
                     Debug.Log("Downloading model from " + modelURL);
                     client.DownloadFile(modelURL, modelPath);
-                    Debug.Log("Downloaded model at " + absolutePath);
+                    Debug.Log("Downloaded model at " + relativePath);
                 }
             }
             else
             {
-                Debug.Log("Model foudn at " + absolutePath);
+                Debug.Log("Model foudn at " + relativePath);
             }
+        }
+
+
+        public static void DownloadDataset()
+        {
+
         }
     }
 }
