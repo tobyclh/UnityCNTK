@@ -13,30 +13,33 @@ namespace UnityCNTK
     {
         /* The implementation is a C# version of the original implementation found in https://github.com/Microsoft/CNTK/blob/master/Tutorials/CNTK_205_Artistic_Style_Transfer.ipynb
         This is by no mean the optimized version*/
-        public string relativeModelPath = @"Assets\UnityCNTK\Model\VGG.dnn";
+        public string relativeModelPath = "Assets/UnityCNTK/Model/VGG.dnn";
 
         public Texture2D styleRef;
 
         public new IEnumerable<Texture2D> input;
         public new IEnumerable<Texture2D> output;
+
         // Use this for initialization
-        Function model;
         void Start()
         {
             LoadModel();
         }
 
-        public override void Evaluate()
+        public override void Evaluate(DeviceDescriptor device)
         {
-            input.ToValue(false);
-            var styleValue = new List<Texture2D>() { styleRef }.ToValue(false);
+            input.ToValue(device, false);
+            var shape = function.Arguments.Single().Shape;
+            styleRef.ResampleAndCrop(shape[0], shape[1]);
+            foreach(var img in input)
+            {
+                img.ResampleAndCrop(shape[0], shape[1]);
+            }
+            var styleValue = new List<Texture2D>() { styleRef }.ToValue(device, false);
             List<Texture2D> textures = new List<Texture2D>();
             Texture2D outputTexture = new Texture2D(input.FirstOrDefault().width, input.FirstOrDefault().height);
-            // outputTexture.SetPixels(colorArray);
             output = textures;
-            
         }
-        /// Load model into function, download if not exist
 
         public override void LoadModel()
         {
@@ -51,17 +54,17 @@ namespace UnityCNTK
             float decay = 0.5f;
 
             
-            var inputVar = model.Arguments.Single();
+            var inputVar = function.Arguments.Single();
             var inputDataMap = new Dictionary<Variable, Value>();
             inputDataMap.Add(inputVar, source);
             // Prepare output
-            Variable outputVar = model.Output;
+            Variable outputVar = function.Output;
 
             var outputDataMap = new Dictionary<Variable, Value>();
             outputDataMap.Add(outputVar, null);
 
             // Evaluate the model.
-            model.Evaluate(inputDataMap, outputDataMap, DeviceDescriptor.CPUDevice);
+            function.Evaluate(inputDataMap, outputDataMap, DeviceDescriptor.CPUDevice);
             // Get output result
             Value outputVal = outputDataMap[outputVar];
             var texture = Convert.ToTexture2D(outputVal, outputVar);
