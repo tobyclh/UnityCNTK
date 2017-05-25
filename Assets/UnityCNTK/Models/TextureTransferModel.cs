@@ -37,20 +37,16 @@ namespace UnityCNTK
 
         public override void Evaluate(DeviceDescriptor device)
         {
-            input.ToValue(device, false);
+            input.ToValue(device);
             var styleVar = function.Arguments[0];
             var shape = styleVar.Shape;
             var resizedStyle = styleRef.ResampleAndCrop(shape[0], shape[1]);
             var outputVar = function.Output;
-            var styleValue = new List<Texture2D>() { resizedStyle }.ToValue(device, false);
+            var styleValue = new List<Texture2D>() { resizedStyle }.ToValue(device);
             var inputDataMap = new Dictionary<Variable, Value>(){{styleVar, styleValue}};
             var outputDataMap = new Dictionary<Variable, Value>(){{outputVar,null}};
-            function.Evaluate(inputDataMap, outputDataMap, device);  
-            List<Texture2D> textures = new List<Texture2D>();
-            // function.Evaluate(new Dictionary<Variable, Value>().Add(inputVar,))   
-            Texture2D outputTexture = new Texture2D(input.FirstOrDefault().width, input.FirstOrDefault().height);
-            output = textures;
-            
+            thread = new Thread(() => function.Evaluate(inputDataMap, outputDataMap, device));
+            thread.Start();  
         }
 
         public override void LoadModel()
@@ -67,9 +63,14 @@ namespace UnityCNTK
             return new double[2];
         }
 
-        
-        
-
+        public override void OnEvaluated()
+        {
+            List<Texture2D> textures = new List<Texture2D>();
+            // function.Evaluate(new Dictionary<Variable, Value>().Add(inputVar,))   
+            Texture2D outputTexture = new Texture2D(input.FirstOrDefault().width, input.FirstOrDefault().height);
+            output = textures;
+            
+        }
     }
 
 }
