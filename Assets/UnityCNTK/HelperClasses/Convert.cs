@@ -15,32 +15,32 @@ namespace UnityCNTK
     {
         public static Value ToValue(this IEnumerable<Texture2D> textures, DeviceDescriptor device)
         {
-            bool useAlpha = textures.First().GetPixel(0, 0).a == 0 ? true : false;
-            Assert.AreNotEqual(textures.Count(), 0);
-            List<float> list = new List<float>();
+            int channelCount =  textures.First().GetPixel(0, 0).a == 0 ? 3 : 4;
+            int count = textures.Count();
+            Assert.AreNotEqual(count, 0);
             int tensorWidth = textures.FirstOrDefault().width;
             int tensorHeight = textures.FirstOrDefault().height;
-            NDShape shape = NDShape.CreateNDShape(new int[] { tensorWidth, tensorHeight, useAlpha ? 4 : 3 });
-            int channelPixelCount = tensorHeight * tensorWidth;
-            Parallel.For(0, textures.Count(), (int batchNum) =>
-           {
-               Assert.AreEqual(textures.ElementAt(batchNum).width, tensorWidth);
-               Assert.AreEqual(textures.ElementAt(batchNum).height, tensorHeight);
-               var pixels = textures.ElementAt(batchNum).GetPixels();
-               var pixelArray = new float[tensorHeight * tensorWidth * (useAlpha ? 4 : 3)];
-               Parallel.For(0, (useAlpha ? 4 : 3) - 1, (int c) =>
-                 {
-                     for (int i = 0; i < tensorHeight * tensorWidth; i++)
-                     {
-                         pixelArray[i + c] = pixels[i][c];
-                     }
-                 });
-               list.AddRange(pixelArray);
-           });
-            return Value.CreateBatch(shape, list, device, false);
+            int channelSize = tensorHeight * tensorWidth;
+            int imageSize = channelSize * channelCount;
+            float[] floatArray = new float[count * tensorHeight * tensorWidth];
+            NDShape shape = NDShape.CreateNDShape(new int[] { tensorWidth, tensorHeight, channelCount});
+            Parallel.For(0, count, (int imageCounter) =>
+            {
+                var texture = textures.ElementAt(imageCounter);
+                Assert.AreEqual(texture.width, tensorWidth);
+                Assert.AreEqual(texture.height, tensorHeight);
+                var pixels = texture.GetPixels();
+                int pixelCount = pixels.Count();
+                Parallel.For(0, channelCount, (int c) =>
+                {
+                      for (int i = 0; i < pixelCount; i++)
+                      {
+                          floatArray[imageCounter*imageSize + + c ] = pixels[pixelCount][c];
+                      }
+                });
+            });
+            return Value.CreateBatch(shape, floatArray, device, false);
         }
-
-
 
         // Convert the main texturue of the material to texture
         public static Value ToValue(this IEnumerable<Material> mats, DeviceDescriptor device)
@@ -50,18 +50,39 @@ namespace UnityCNTK
         }
 
 
-        public static Value ToValue(this IEnumerable<Vector3> vector, DeviceDescriptor device)
+        public static Value ToValue(this IEnumerable<Vector3> vectors, DeviceDescriptor device)
         {
-            Assert.AreNotEqual(vector.Count(), 0);
-            float[] floatArray = new float[vector.Count()];
-            NDShape shape = NDShape.CreateNDShape(new int[] { 3, 1, 1 });
-            Parallel.For(0, vector.Count(), (int batchNum) =>
+            var count = vectors.Count();
+            Assert.AreNotEqual(count, 0, "Empty list");
+            float[] floatArray = new float[count * 3];
+            NDShape shape = NDShape.CreateNDShape(new int[] { 3 });
+            Parallel.For(0, count, (int batchNum) =>
             {
-                vector[batchNum*3] = vector[batchNum].x;
+                var vector = vectors.ElementAt(batchNum);
+                floatArray[batchNum * 3] = vector.x;
+                floatArray[batchNum * 3 + 1] = vector.y;
+                floatArray[batchNum * 3 + 2] = vector.z;
             });
-            return Value.CreateBatch(shape, list, device, false);
+            return Value.CreateBatch(shape, floatArray, device, false);
+        }
+
+        public static Value ToValue(this IEnumerable<Quaternion> quats, DeviceDescriptor device)
+        {
+            Assert.AreNotEqual(quats.Count(), 0);
+            float[] floatArray = new float[quats.Count()];
+            NDShape shape = NDShape.CreateNDShape(new int[] { 4 });
+            Parallel.For(0, quats.Count(), (int batchNum) =>
+            {
+                var quat = quats.ElementAt(batchNum);
+                floatArray[batchNum * 4] = quat.w;
+                floatArray[batchNum * 4 + 1] = quat.x;
+                floatArray[batchNum * 4 + 2] = quat.y;
+                floatArray[batchNum * 4 + 3] = quat.z;
+            });
+            return Value.CreateBatch(shape, floatArray, device, false);
 
         }
+
         public static List<Texture2D> ToTexture2D(Value value, Variable variable)
         {
             List<Texture2D> texs = new List<Texture2D>();
