@@ -4,7 +4,6 @@ using UnityEngine.Assertions;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
-using CNTK;
 using System.Timers;
 using System.Threading;
 using CNTK;
@@ -20,8 +19,43 @@ namespace UnityCNTK
         public string Name;
         public string relativeModelPath;
         public Function function;
-        public IConvertible input;
-        public IConvertible output;
+        private IConvertible _input;
+        public IConvertible input
+        {
+            get { return _input; }
+            set
+            {
+                if(isEvaluating)
+                {
+                    Debug.LogError("Input cannot be set when an evaluation is carrying out");
+                }
+                else
+                {
+                    _input = value;
+                }
+            }
+        }
+        public bool isEvaluating = false;
+
+        private IConvertible _output;
+
+        public IConvertible output
+        {
+
+            get { return _output; }
+            set
+            {
+                if(isEvaluating)
+                {
+                    Debug.LogError("Input cannot be set when an evaluation is carrying out");
+                }
+                else
+                {
+                    _input = value;
+                }
+            }
+        }
+
         public Thread thread;
         public bool KeepModelLoaded = false;
         public DeviceDescriptor device;
