@@ -17,6 +17,7 @@ namespace UnityCNTK
     // which are very useful in general.
     public class Model : ScriptableObject
     {
+        public string Name;
         public string relativeModelPath;
         public Function function;
         public IConvertible input;
