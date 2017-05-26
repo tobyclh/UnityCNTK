@@ -15,7 +15,7 @@ namespace UnityCNTK
     {
         public static Value ToValue(this IEnumerable<Texture2D> textures, DeviceDescriptor device)
         {
-            int channelCount =  textures.First().GetPixel(0, 0).a == 0 ? 3 : 4;
+            int channelCount = textures.First().GetPixel(0, 0).a == 0 ? 3 : 4;
             int count = textures.Count();
             Assert.AreNotEqual(count, 0);
             int tensorWidth = textures.FirstOrDefault().width;
@@ -23,7 +23,7 @@ namespace UnityCNTK
             int channelSize = tensorHeight * tensorWidth;
             int imageSize = channelSize * channelCount;
             float[] floatArray = new float[count * tensorHeight * tensorWidth];
-            NDShape shape = NDShape.CreateNDShape(new int[] { tensorWidth, tensorHeight, channelCount});
+            NDShape shape = NDShape.CreateNDShape(new int[] { tensorWidth, tensorHeight, channelCount });
             Parallel.For(0, count, (int imageCounter) =>
             {
                 var texture = textures.ElementAt(imageCounter);
@@ -33,10 +33,10 @@ namespace UnityCNTK
                 int pixelCount = pixels.Count();
                 Parallel.For(0, channelCount, (int c) =>
                 {
-                      for (int i = 0; i < pixelCount; i++)
-                      {
-                          floatArray[imageCounter*imageSize + + c ] = pixels[pixelCount][c];
-                      }
+                    for (int i = 0; i < pixelCount; i++)
+                    {
+                        floatArray[imageCounter * imageSize + i * channelCount + c] = pixels[pixelCount][c];
+                    }
                 });
             });
             return Value.CreateBatch(shape, floatArray, device, false);
@@ -71,7 +71,8 @@ namespace UnityCNTK
             Assert.AreNotEqual(quats.Count(), 0);
             float[] floatArray = new float[quats.Count()];
             NDShape shape = NDShape.CreateNDShape(new int[] { 4 });
-            Parallel.For(0, quats.Count(), (int batchNum) =>
+            int count = quats.Count();
+            Parallel.For(0, count, (int batchNum) =>
             {
                 var quat = quats.ElementAt(batchNum);
                 floatArray[batchNum * 4] = quat.w;
@@ -80,18 +81,17 @@ namespace UnityCNTK
                 floatArray[batchNum * 4 + 3] = quat.z;
             });
             return Value.CreateBatch(shape, floatArray, device, false);
-
         }
 
-        public static List<Texture2D> ToTexture2D(Value value, Variable variable)
+        public static List<Texture2D> ToTexture2D(this Value value, Variable variable)
         {
             List<Texture2D> texs = new List<Texture2D>();
             var dimemsions = value.Shape.Dimensions;
             var lists = value.GetDenseData<float>(variable);
             var rawTextures = from list in lists.AsParallel()
                               select list.ToArray();
-            if (value.Shape.TotalSize % dimemsions[0] * dimemsions[1] * dimemsions[2] != 0) throw new ApplicationException("Size unmatch");
-            else if (dimemsions[2] != 3 && dimemsions[2] != 4) throw new ApplicationException("Image must be 3 / 4 dimension");
+            if ((value.Shape.TotalSize % dimemsions[0] * dimemsions[1] * dimemsions[2]) != 0) throw new ApplicationException("Size unmatch");
+            else if (dimemsions[2] != 3 && dimemsions[2] != 4) throw new ApplicationException("Image must have 3 or 4 channels");
             Parallel.For(0, rawTextures.Count(), (int t) =>
             {
                 Color[] pixels = new Color[dimemsions[0] * dimemsions[1] * dimemsions[2]];
@@ -110,47 +110,6 @@ namespace UnityCNTK
 
 
 
-        public static Texture2D ResampleAndCrop(this Texture2D source, int targetWidth, int targetHeight)
-        {
-            int sourceWidth = source.width;
-            int sourceHeight = source.height;
-            float sourceAspect = (float)sourceWidth / sourceHeight;
-            float targetAspect = (float)targetWidth / targetHeight;
-            int xOffset = 0;
-            int yOffset = 0;
-            float factor = 1;
-            if (sourceAspect > targetAspect)
-            { // crop width
-                factor = (float)targetHeight / sourceHeight;
-                xOffset = (int)((sourceWidth - sourceHeight * targetAspect) * 0.5f);
-            }
-            else
-            { // crop height
-                factor = (float)targetWidth / sourceWidth;
-                yOffset = (int)((sourceHeight - sourceWidth / targetAspect) * 0.5f);
-            }
-            Color32[] data = source.GetPixels32();
-            Color32[] data2 = new Color32[targetWidth * targetHeight];
-            for (int y = 0; y < targetHeight; y++)
-            {
-                for (int x = 0; x < targetWidth; x++)
-                {
-                    var p = new Vector2(Mathf.Clamp(xOffset + x / factor, 0, sourceWidth - 1), Mathf.Clamp(yOffset + y / factor, 0, sourceHeight - 1));
-                    // bilinear filtering
-                    var c11 = data[Mathf.FloorToInt(p.x) + sourceWidth * (Mathf.FloorToInt(p.y))];
-                    var c12 = data[Mathf.FloorToInt(p.x) + sourceWidth * (Mathf.CeilToInt(p.y))];
-                    var c21 = data[Mathf.CeilToInt(p.x) + sourceWidth * (Mathf.FloorToInt(p.y))];
-                    var c22 = data[Mathf.CeilToInt(p.x) + sourceWidth * (Mathf.CeilToInt(p.y))];
-                    var f = new Vector2(Mathf.Repeat(p.x, 1f), Mathf.Repeat(p.y, 1f));
-                    data2[x + y * targetWidth] = Color.Lerp(Color.Lerp(c11, c12, p.y), Color.Lerp(c21, c22, p.y), p.x);
-                }
-            }
-
-            var tex = new Texture2D(targetWidth, targetHeight);
-            tex.SetPixels32(data2);
-            tex.Apply(true);
-            return tex;
-        }
 
     }
 
