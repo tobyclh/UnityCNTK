@@ -13,33 +13,59 @@ namespace UnityCNTK
     //Simple 
     public static class Convert
     {
-        public static Value ToValue(this IEnumerable<Texture2D> textures, DeviceDescriptor device)
+        public static Value ToValue(this IEnumerable<Texture2D> textures, DeviceDescriptor device, bool mono = false)
         {
-            int channelCount = textures.First().GetPixel(0, 0).a == 0 ? 3 : 4;
             int count = textures.Count();
             Assert.AreNotEqual(count, 0);
             int tensorWidth = textures.FirstOrDefault().width;
             int tensorHeight = textures.FirstOrDefault().height;
             int channelSize = tensorHeight * tensorWidth;
-            int imageSize = channelSize * channelCount;
-            float[] floatArray = new float[count * tensorHeight * tensorWidth];
-            NDShape shape = NDShape.CreateNDShape(new int[] { tensorWidth, tensorHeight, channelCount });
-            Parallel.For(0, count, (int imageCounter) =>
+            if (!mono)
             {
-                var texture = textures.ElementAt(imageCounter);
-                Assert.AreEqual(texture.width, tensorWidth);
-                Assert.AreEqual(texture.height, tensorHeight);
-                var pixels = texture.GetPixels();
-                int pixelCount = pixels.Count();
-                Parallel.For(0, channelCount, (int c) =>
+                int channelCount = textures.First().GetPixel(0, 0).a == 0 ? 3 : 4;
+                int imageSize = channelSize * channelCount;
+                float[] floatArray = new float[count * imageSize];
+                NDShape shape = NDShape.CreateNDShape(new int[] { tensorWidth, tensorHeight, channelCount });
+                Parallel.For(0, count, (int imageCounter) =>
                 {
-                    for (int i = 0; i < pixelCount; i++)
+                    var texture = textures.ElementAt(imageCounter);
+                    Assert.AreEqual(texture.width, tensorWidth);
+                    Assert.AreEqual(texture.height, tensorHeight);
+                    var pixels = texture.GetPixels();
+                    int pixelCount = pixels.Count();
+                    Parallel.For(0, channelCount, (int c) =>
                     {
-                        floatArray[imageCounter * imageSize + i * channelCount + c] = pixels[pixelCount][c];
-                    }
+                        for (int i = 0; i < pixelCount; i++)
+                        {
+                            floatArray[imageCounter * imageSize + i * channelCount + c] = pixels[pixelCount][c];
+                        }
+                    });
                 });
-            });
-            return Value.CreateBatch(shape, floatArray, device, false);
+                return Value.CreateBatch(shape, floatArray, device, false);
+            }
+            else
+            {
+                int imageSize = channelSize;
+                float[] floatArray = new float[count * imageSize];
+                NDShape shape = NDShape.CreateNDShape(new int[] { tensorWidth, tensorHeight, 1 });
+                Parallel.For(0, count, (int imageCounter) =>
+                {
+                    var texture = textures.ElementAt(imageCounter);
+                    Assert.AreEqual(texture.width, tensorWidth);
+                    Assert.AreEqual(texture.height, tensorHeight);
+                    var pixels = texture.GetPixels();
+                    int pixelCount = pixels.Count();
+                    Parallel.For(0, channelCount, (int c) =>
+                    {
+                        for (int i = 0; i < pixelCount; i++)
+                        {
+                            floatArray[imageCounter * imageSize + i * channelCount + c] = pixels[pixelCount][c];
+                        }
+                    });
+                });
+                return Value.CreateBatch(shape, floatArray, device, false);
+
+            }
         }
 
         // Convert the main texturue of the material to texture
@@ -88,8 +114,8 @@ namespace UnityCNTK
             List<Texture2D> texs = new List<Texture2D>();
             var dimemsions = value.Shape.Dimensions;
             var lists = value.GetDenseData<float>(variable);
-            var rawTextures = from list in lists.AsParallel()
-                              select list.ToArray();
+            var rawTextures = lists.AsParallel();
+
             if ((value.Shape.TotalSize % dimemsions[0] * dimemsions[1] * dimemsions[2]) != 0) throw new ApplicationException("Size unmatch");
             else if (dimemsions[2] != 3 && dimemsions[2] != 4) throw new ApplicationException("Image must have 3 or 4 channels");
             Parallel.For(0, rawTextures.Count(), (int t) =>
