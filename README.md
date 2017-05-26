@@ -1,21 +1,25 @@
 # UnityCNTK
-#### Deep learning package for Unity, backed by CNTK
-##### Unslash your creativity 
-#### Windows only for now, Linux will likely come soon, can't say the same for OSX 
+#### Deep learning framework for Unity, backed by CNTK
+##### Unslash your creativity, built for production
+#### Windows only for now
 
 ### Planned Features
-1. Style Transfer
-  - Sick of creating every single material for your project? 
-     Mix and match with our style transfer model.
-     Provide one reference image and we will turn other image under the same style
+ 
 2. Texture synthesis
-  - Create texture for tiling  
+    - Create texture for tiling  
 3. In-game AI evaluation
-  - The evaluation API is containable should be able to ship with your game
+   - The evaluation API is containable should be able to ship with your game
 4. Unlimited expensionality
-  - Backend with CNTK that unlock the best performance
+   - Backend with CNTK that unlock the best performance
 5. Examples 
-  - DL Teaching materials, so
+    - Various applications to show the potential of CNTK
+6. Actively maintained library
+    - Include downloader to common state of the art available deep neural network
+7. Built for performance
+    - Calculation are all in background thread
+    - Fully paralleled calculation
+    - GPU Support
+
 
 ### Includes
 1. Easy conversion from Unity classes to CNTK acceptable value
