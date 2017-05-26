@@ -19,8 +19,8 @@ namespace UnityCNTK
         public string Name;
         public string relativeModelPath;
         public Function function;
-        private IConvertible _input;
-        public IConvertible input
+        private UnityEngine.Object _input;
+        public UnityEngine.Object input
         {
             get { return _input; }
             set
@@ -37,9 +37,9 @@ namespace UnityCNTK
         }
         public bool isEvaluating = false;
 
-        private IConvertible _output;
+        private UnityEngine.Object _output = null;
 
-        public IConvertible output
+        public UnityEngine.Object output
         {
 
             get { return _output; }
@@ -51,50 +51,52 @@ namespace UnityCNTK
                 }
                 else
                 {
-                    _input = value;
+                    _output = value;
                 }
             }
         }
 
-        public Thread thread;
         public bool KeepModelLoaded = false;
         public DeviceDescriptor device;
+        protected Thread thread;
         public virtual void LoadModel()
         {
             Assert.IsNotNull(relativeModelPath);
             var absolutePath = System.IO.Path.Combine(Environment.CurrentDirectory, relativeModelPath);
-            // Downloader.DownloadPretrainedModel(Downloader.pretrainedModel.VGG16, absolutePath);
         }
 
         public virtual void Evaluate()
         {
+            Assert.IsNotNull(function);
+            isEvaluating = true;
             var IOValues = OnPreprocess();
             thread = new Thread(() =>
             {
                 function.Evaluate(IOValues[0], IOValues[1], device);
                 OnEvaluated(IOValues[1]);
+                if (!KeepModelLoaded) function.Dispose();
+                isEvaluating = false;
             });
             thread.IsBackground = true;
             thread.Start();
         }
 
+        // Process input data to be consumed by 
         public virtual List<Dictionary<Variable, Value>> OnPreprocess()
         {
-            Assert.IsNotNull(device);
-            Assert.IsNotNull(input);
-            if (function == null) LoadModel();
-            var inputVar = function.Arguments.Single();
-            var inputDataMap = new Dictionary<Variable, Value>() { { inputVar, input.ToValue(device) } };
-            var outputDataMap = new Dictionary<Variable, Value>() { { function.Output, null } };
-            return new List<Dictionary<Variable, Value>>() { inputDataMap, outputDataMap };
+            throw new NotImplementedException();
         }
 
         // process output data to fit user requirement
-        public virtual void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
+        // you should set the convert output Value to 
+        protected virtual void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
         {
-
+            throw new NotImplementedException();
         }
 
+        // by now the 
+        public virtual void OnPostProcessed()
+        {}
     }
 
 }

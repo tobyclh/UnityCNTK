@@ -17,8 +17,6 @@ namespace UnityCNTK{
 		// Evaluation carry out in every 'evaluationPeriod' second
 		public double evaluationPeriod = 10;
 
-		public bool isEvaluating = false;
-
         public override void Evaluate()
         {
 			if (isEvaluating)
@@ -34,7 +32,7 @@ namespace UnityCNTK{
             throw new NotImplementedException();
         }
 
-        public override void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
+        protected override void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
         {
             isEvaluating = false;
             

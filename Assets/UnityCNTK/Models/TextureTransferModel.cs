@@ -8,7 +8,7 @@ using UnityCNTK;
 using System.Net;
 using System.Threading; 
 using Accord.Math.Optimization;
-using Microsoft.MSR.CNTK.Extensibility.Managed;
+using UnityEngine.Assertions;
 namespace UnityCNTK
 {
     public class TextureTransferModel : Model
@@ -31,26 +31,6 @@ namespace UnityCNTK
         public double decay = 0.5f;
         // Use this for initialization
         
-        public override void Evaluate()
-        {
-            if(function == null ) LoadModel();
-            input.ToValue(device);
-            var styleVar = function.Arguments[0];
-            var shape = styleVar.Shape;
-            var resizedStyle = styleRef.ResampleAndCrop(shape[0], shape[1]);
-            var outputVar = function.Output;
-            var styleValue = new List<Texture2D>() { resizedStyle }.ToValue(device);
-            var inputDataMap = new Dictionary<Variable, Value>(){{styleVar, styleValue}};
-            var outputDataMap = new Dictionary<Variable, Value>(){{outputVar,null}};
-            thread = new Thread(() => 
-            {
-                function.Evaluate(inputDataMap, outputDataMap, device);
-                OnEvaluated(outputDataMap);
-            });
-            thread.IsBackground = true;
-            thread.Start();   
-        }
-
         public override void LoadModel()
         {
             var absolutePath = System.IO.Path.Combine(Environment.CurrentDirectory, relativeModelPath);
@@ -61,22 +41,29 @@ namespace UnityCNTK
 
         public double[] ObjectiveFunction()
         {
-            
-            return new double[2];
+            throw new NotImplementedException();
+            // return new double[2];
         }
 
         //post processing output data
-        public override void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
+        protected override void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
         {
             List<Texture2D> textures = new List<Texture2D>();
             // function.Evaluate(new Dictionary<Variable, Value>().Add(inputVar,))   
             Texture2D outputTexture = new Texture2D(input.FirstOrDefault().width, input.FirstOrDefault().height);
             output = textures;
-            if(!KeepModelLoaded)
-            {
-                function.Dispose();
-                function = null;
-            } 
+        }
+
+        public override List<Dictionary<Variable, Value>> OnPreprocess()
+        {
+            throw new NotImplementedException();
+            Assert.IsNotNull(device);
+            Assert.IsNotNull(input);
+            if (function == null) LoadModel();
+            var inputVar = function.Arguments.Single();
+            var inputDataMap = new Dictionary<Variable, Value>() { { inputVar, input.ToValue(device) } };
+            var outputDataMap = new Dictionary<Variable, Value>() { { function.Output, null } };
+            return new List<Dictionary<Variable, Value>>() { inputDataMap, outputDataMap };
         }
     }
 

@@ -19,7 +19,7 @@ namespace UnityCNTK
             throw new NotImplementedException();
         }
 
-        public override void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
+        protected override void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
         {
             throw new NotImplementedException();
         }
