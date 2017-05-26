@@ -30,11 +30,11 @@ namespace UnityCNTK
                var pixelArray = new float[tensorHeight * tensorWidth * (useAlpha ? 4 : 3)];
                Parallel.For(0, (useAlpha ? 4 : 3) - 1, (int c) =>
                  {
-                   for (int i = 0; i < tensorHeight * tensorWidth; i++)
-                   {
-                       pixelArray[i + c] = pixels[i][c];
-                   }
-               });
+                     for (int i = 0; i < tensorHeight * tensorWidth; i++)
+                     {
+                         pixelArray[i + c] = pixels[i][c];
+                     }
+                 });
                list.AddRange(pixelArray);
            });
             return Value.CreateBatch(shape, list, device, false);
@@ -49,6 +49,19 @@ namespace UnityCNTK
             return textures.ToValue(device);
         }
 
+
+        public static Value ToValue(this IEnumerable<Vector3> vector, DeviceDescriptor device)
+        {
+            Assert.AreNotEqual(vector.Count(), 0);
+            float[] floatArray = new float[vector.Count()];
+            NDShape shape = NDShape.CreateNDShape(new int[] { 3, 1, 1 });
+            Parallel.For(0, vector.Count(), (int batchNum) =>
+            {
+                vector[batchNum*3] = vector[batchNum].x;
+            });
+            return Value.CreateBatch(shape, list, device, false);
+
+        }
         public static List<Texture2D> ToTexture2D(Value value, Variable variable)
         {
             List<Texture2D> texs = new List<Texture2D>();
@@ -73,6 +86,7 @@ namespace UnityCNTK
             });
             return texs;
         }
+
 
 
         public static Texture2D ResampleAndCrop(this Texture2D source, int targetWidth, int targetHeight)
