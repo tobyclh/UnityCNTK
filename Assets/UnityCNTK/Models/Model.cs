@@ -8,23 +8,57 @@ using CNTK;
 using System.Timers;
 using System.Threading;
 using CNTK;
+using System;
+
 namespace UnityCNTK
 {
     // Unifying class that combine the use of both EvalDLL and CNTKLibrary
     // The reason we have not dropped support for EvalDLL is that it expose more native function of the full API,
     // which are very useful in general.
-    public abstract class Model : ScriptableObject
-    {   
+    public class Model : ScriptableObject
+    {
+        public string relativeModelPath;
         public Function function;
         public IConvertible input;
         public IConvertible output;
-        public Thread thread; 
+        public Thread thread;
         public bool KeepModelLoaded = false;
-        public abstract void LoadModel();
+        public DeviceDescriptor device;
+        public virtual void LoadModel()
+        {
+            Assert.IsNotNull(relativeModelPath);
+            var absolutePath = System.IO.Path.Combine(Environment.CurrentDirectory, relativeModelPath);
+            // Downloader.DownloadPretrainedModel(Downloader.pretrainedModel.VGG16, absolutePath);
+        }
 
-        public abstract void Evaluate(DeviceDescriptor device);
+        public virtual void Evaluate()
+        {
+            var IOValues = OnPreprocess();
+            thread = new Thread(() =>
+            {
+                function.Evaluate(IOValues[0], IOValues[1], device);
+                OnEvaluated(IOValues[1]);
+            });
+            thread.IsBackground = true;
+            thread.Start();
+        }
 
-        public abstract void OnEvaluated();
+        public virtual List<Dictionary<Variable, Value>> OnPreprocess()
+        {
+            Assert.IsNotNull(device);
+            Assert.IsNotNull(input);
+            if (function == null) LoadModel();
+            var inputVar = function.Arguments.Single();
+            var inputDataMap = new Dictionary<Variable, Value>() { { inputVar, input.ToValue(device) } };
+            var outputDataMap = new Dictionary<Variable, Value>() { { function.Output, null } };
+            return new List<Dictionary<Variable, Value>>() { inputDataMap, outputDataMap };
+        }
+
+        // process output data to fit user requirement
+        public virtual void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
+        {
+
+        }
 
     }
 

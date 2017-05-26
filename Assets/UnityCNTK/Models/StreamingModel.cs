@@ -9,10 +9,9 @@ namespace UnityCNTK{
     public class StreamingModel<T, V> : Model 
     where T:IConvertible 
     where V:IConvertible
-
     {
 
-		public new T input; 
+		public new T input;
 		public new V output;
 
 		// Evaluation carry out in every 'evaluationPeriod' second
@@ -20,15 +19,14 @@ namespace UnityCNTK{
 
 		public bool isEvaluating = false;
 
-        public override void Evaluate(DeviceDescriptor device)
+        public override void Evaluate()
         {
 			if (isEvaluating)
 			{
             	throw new TimeoutException("Evalauation not finished before the another call, ");
 			}
             isEvaluating = true;
-            
-						
+			
         }
 
         public override void LoadModel()
@@ -36,9 +34,10 @@ namespace UnityCNTK{
             throw new NotImplementedException();
         }
 
-        public override void OnEvaluated()
+        public override void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
         {
-            throw new NotImplementedException();
+            isEvaluating = false;
+            
         }
     }
 }

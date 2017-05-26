@@ -20,7 +20,7 @@ namespace UnityCNTK
 
         */
  
-        public string relativeModelPath = "Assets/UnityCNTK/Model/VGG.dnn";
+        public new string relativeModelPath = "Assets/UnityCNTK/Model/VGG.dnn";
 
         public Texture2D styleRef;
         public new IEnumerable<Texture2D> input;
@@ -30,13 +30,10 @@ namespace UnityCNTK
         public double styleWeight = 1;
         public double decay = 0.5f;
         // Use this for initialization
-        void Start()
+        
+        public override void Evaluate()
         {
-            LoadModel();
-        }
-
-        public override void Evaluate(DeviceDescriptor device)
-        {
+            if(function == null ) LoadModel();
             input.ToValue(device);
             var styleVar = function.Arguments[0];
             var shape = styleVar.Shape;
@@ -45,8 +42,13 @@ namespace UnityCNTK
             var styleValue = new List<Texture2D>() { resizedStyle }.ToValue(device);
             var inputDataMap = new Dictionary<Variable, Value>(){{styleVar, styleValue}};
             var outputDataMap = new Dictionary<Variable, Value>(){{outputVar,null}};
-            thread = new Thread(() => function.Evaluate(inputDataMap, outputDataMap, device));
-            thread.Start();  
+            thread = new Thread(() => 
+            {
+                function.Evaluate(inputDataMap, outputDataMap, device);
+                OnEvaluated(outputDataMap);
+            });
+            thread.IsBackground = true;
+            thread.Start();   
         }
 
         public override void LoadModel()
@@ -63,13 +65,18 @@ namespace UnityCNTK
             return new double[2];
         }
 
-        public override void OnEvaluated()
+        //post processing output data
+        public override void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
         {
             List<Texture2D> textures = new List<Texture2D>();
             // function.Evaluate(new Dictionary<Variable, Value>().Add(inputVar,))   
             Texture2D outputTexture = new Texture2D(input.FirstOrDefault().width, input.FirstOrDefault().height);
             output = textures;
-            
+            if(!KeepModelLoaded)
+            {
+                function.Dispose();
+                function = null;
+            } 
         }
     }
 

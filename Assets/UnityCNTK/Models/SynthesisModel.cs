@@ -14,12 +14,12 @@ namespace UnityCNTK
         
         public string namingRules;
 
-        public override void Evaluate(DeviceDescriptor device)
+        public override void Evaluate()
         {
             throw new NotImplementedException();
         }
 
-        public override void LoadModel()
+        public override void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
         {
             throw new NotImplementedException();
         }
