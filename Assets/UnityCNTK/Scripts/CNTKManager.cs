@@ -11,13 +11,16 @@ namespace UnityCNTK{
 		{
 			Auto, CPU, GPU, Default
 		}
-		[Tooltip("Avoid Default unless you are familiar with the usage")]
+		[Tooltip("Where to put all the work, Avoid 'Default' unless you are familiar with the usage")]
 		public HardwareOptions hardwareOption = HardwareOptions.Auto;
 
 		
+		void Awake()
+		{
+			MakeSingleton();
+		}
 		
 		void Start () {
-			MakeSingleton();
 			switch (hardwareOption)
 			{
 				case HardwareOptions.Auto:
