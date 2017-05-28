@@ -13,7 +13,15 @@ namespace UnityCNTK
     //Simple 
     public static class Convert
     {
-        public static Value ToValue(this IEnumerable<Texture2D> textures, DeviceDescriptor device, bool mono = false)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="textures"></param>
+        /// <param name="device">which device should this value go</param>
+        /// <param name="mono">should we turn this into a monochrome picture</param>
+        /// <param name="smallTexture"></param>
+        /// <returns></returns>
+        public static Value ToValue(this IEnumerable<Texture2D> textures, DeviceDescriptor device, bool mono = false, bool smallTexture = true)
         {
             int count = textures.Count();
             Assert.AreNotEqual(count, 0);
@@ -28,7 +36,9 @@ namespace UnityCNTK
                 NDShape shape = NDShape.CreateNDShape(new int[] { tensorWidth, tensorHeight, channelCount });
                 Parallel.For(0, count, (int imageCounter) =>
                 {
+
                     var texture = textures.ElementAt(imageCounter);
+                    
                     Assert.AreEqual(texture.width, tensorWidth);
                     Assert.AreEqual(texture.height, tensorHeight);
                     var pixels = texture.GetPixels();
@@ -55,13 +65,10 @@ namespace UnityCNTK
                     Assert.AreEqual(texture.height, tensorHeight);
                     var pixels = texture.GetPixels();
                     int pixelCount = pixels.Count();
-                    Parallel.For(0, channelCount, (int c) =>
+                    for (int i = 0; i < pixelCount; i++)
                     {
-                        for (int i = 0; i < pixelCount; i++)
-                        {
-                            floatArray[imageCounter * imageSize + i * channelCount + c] = pixels[pixelCount][c];
-                        }
-                    });
+                        floatArray[imageCounter * imageSize + i] = pixels[pixelCount].grayscale;
+                    }
                 });
                 return Value.CreateBatch(shape, floatArray, device, false);
 
