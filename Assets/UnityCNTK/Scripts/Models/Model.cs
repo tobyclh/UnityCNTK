@@ -18,6 +18,9 @@ namespace UnityCNTK
     public class Model : ScriptableObject
     {
         public UnityEvent OnModelLoaded;
+        
+        private Model(){}
+        
         public string Name;
         public string relativeModelPath;
         public Function function;
