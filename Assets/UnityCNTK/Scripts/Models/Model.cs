@@ -101,9 +101,19 @@ namespace UnityCNTK
             throw new NotImplementedException();
         }
 
-        // by now the 
         public virtual void OnPostProcessed()
         {}
+
+        /// <summary>
+        /// Unload model from memory
+        /// </summary>
+        public void UnloadModel()
+        {
+            if(function != null)
+            {
+                function.Dispose();
+            }
+        }
     }
 
 }
