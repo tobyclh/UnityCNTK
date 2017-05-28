@@ -12,9 +12,9 @@ using UnityEngine.Events;
 
 namespace UnityCNTK
 {
-    // Unifying class that combine the use of both EvalDLL and CNTKLibrary
-    // The reason we have not dropped support for EvalDLL is that it expose more native function of the full API,
-    // which are very useful in general.
+    /// <summary>
+    /// Base class that 
+    /// </summary>
     public class Model : ScriptableObject
     {
         public UnityEvent OnModelLoaded;
@@ -79,17 +79,19 @@ namespace UnityCNTK
             var IOValues = OnPreprocess();
             thread = new Thread(() =>
             {
-                function.Evaluate(IOValues[0], IOValues[1], device);
+                function.Evaluate(IOValues[0], IOValues[1], CNTKManager.device);
                 OnEvaluated(IOValues[1]);
-                if (!KeepModelLoaded) function.Dispose();
                 isEvaluating = false;
             });
             thread.IsBackground = true;
             thread.Start();
         }
 
-        // Process input data to be consumed by 
-        public virtual List<Dictionary<Variable, Value>> OnPreprocess()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        protected virtual List<Dictionary<Variable, Value>> OnPreprocess()
         {
             throw new NotImplementedException();
         }
