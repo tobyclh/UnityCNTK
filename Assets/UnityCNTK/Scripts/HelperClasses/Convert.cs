@@ -38,7 +38,7 @@ namespace UnityCNTK
                 {
 
                     var texture = textures.ElementAt(imageCounter);
-                    
+
                     Assert.AreEqual(texture.width, tensorWidth);
                     Assert.AreEqual(texture.height, tensorHeight);
                     var pixels = texture.GetPixels();
@@ -80,9 +80,10 @@ namespace UnityCNTK
                     int pixelCount = pixels.Count();
                     if (smallTexture)
                     {
-                        floatArray[imageCounter * imageSize + i] = pixels[pixelCount].grayscale;
                         for (int i = 0; i < pixelCount; i++)
                         {
+                            floatArray[imageCounter * imageSize + i] = pixels[pixelCount].grayscale;
+                        }
                     }
                     else
                     {
@@ -140,6 +141,13 @@ namespace UnityCNTK
             return Value.CreateBatch(shape, floatArray, device, false);
         }
 
+        public static Value ToValue(this Vector3 vector, DeviceDescriptor device)
+        {
+            NDShape shape = NDShape.CreateNDShape(new int[] { 3 });
+            return Value.CreateBatch(shape, new float[] { vector.x, vector.y, vector.z }, device, false);
+        }
+
+
         public static Value ToValue(this IEnumerable<Quaternion> quats, DeviceDescriptor device)
         {
             Assert.AreNotEqual(quats.Count(), 0);
@@ -155,6 +163,12 @@ namespace UnityCNTK
                 floatArray[batchNum * 4 + 3] = quat.z;
             });
             return Value.CreateBatch(shape, floatArray, device, false);
+        }
+
+        public static Value ToValue(this Quaternion quat, DeviceDescriptor device)
+        {
+            NDShape shape = NDShape.CreateNDShape(new int[] { 4 });
+            return Value.CreateBatch(shape, new float[] { quat.w, quat.x, quat.y, quat.z }, device, false);
         }
 
         public static List<Texture2D> ToTexture2D(this Value value, Variable variable)
