@@ -19,7 +19,7 @@ namespace UnityCNTK
         /// <param name="textures"></param>
         /// <param name="device">which device should this value go</param>
         /// <param name="mono">should we turn this into a monochrome picture</param>
-        /// <param name="smallTexture"></param>
+        /// <param name="smallTexture">parallel for each row in case of big texture</param>
         /// <returns></returns>
         public static Value ToValue(this IEnumerable<Texture2D> textures, DeviceDescriptor device, bool mono = false, bool smallTexture = true)
         {
@@ -45,9 +45,22 @@ namespace UnityCNTK
                     int pixelCount = pixels.Count();
                     Parallel.For(0, channelCount, (int c) =>
                     {
-                        for (int i = 0; i < pixelCount; i++)
+                        if (smallTexture)
                         {
-                            floatArray[imageCounter * imageSize + i * channelCount + c] = pixels[pixelCount][c];
+                            for (int i = 0; i < pixelCount; i++)
+                            {
+                                floatArray[imageCounter * imageSize + i * channelCount + c] = pixels[pixelCount][c];
+                            }
+                        }
+                        else
+                        {
+                            Parallel.For(0, tensorHeight, (int row) =>
+                            {
+                                for (int j = 0; j < tensorWidth; j++)
+                                {
+                                    floatArray[imageCounter * imageSize + row * tensorWidth + j + c] = pixels[row * tensorWidth + j][c];
+                                }
+                            });
                         }
                     });
                 });
@@ -65,23 +78,51 @@ namespace UnityCNTK
                     Assert.AreEqual(texture.height, tensorHeight);
                     var pixels = texture.GetPixels();
                     int pixelCount = pixels.Count();
-                    for (int i = 0; i < pixelCount; i++)
+                    if (smallTexture)
                     {
                         floatArray[imageCounter * imageSize + i] = pixels[pixelCount].grayscale;
+                        for (int i = 0; i < pixelCount; i++)
+                        {
                     }
+                    else
+                    {
+                        Parallel.For(0, tensorHeight, (int row) =>
+                        {
+                            for (int j = 0; j < tensorWidth; j++)
+                            {
+                                floatArray[imageCounter * imageSize + row * tensorWidth + j] = pixels[row * tensorWidth + j].grayscale;
+                            }
+                        });
+                    }
+
                 });
                 return Value.CreateBatch(shape, floatArray, device, false);
 
             }
         }
 
-        // Convert the main texturue of the material to texture
+        public static Value ToValue(this Texture2D texture, DeviceDescriptor device, bool mono = false, bool smallTexture = true)
+        {
+            List<Texture2D> wrapper = new List<Texture2D>() { texture };
+            return wrapper.ToValue(device, mono, smallTexture);
+        }
+
+        /// <summary>
+        /// Convert main texture of the materials to 
+        /// </summary>
+        /// <param name="mats"></param>
+        /// <param name="device"></param>
+        /// <returns></returns>
         public static Value ToValue(this IEnumerable<Material> mats, DeviceDescriptor device)
         {
             IEnumerable<Texture2D> textures = mats.Select(x => x.mainTexture as Texture2D);
             return textures.ToValue(device);
         }
 
+        public static Value ToValue(this Material mat, DeviceDescriptor device)
+        {
+            return (mat.mainTexture as Texture2D).ToValue(device);
+        }
 
         public static Value ToValue(this IEnumerable<Vector3> vectors, DeviceDescriptor device)
         {
