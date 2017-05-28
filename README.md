@@ -1,25 +1,32 @@
 # UnityCNTK
 #### Deep learning framework for Unity, backed by CNTK
 ##### Unslash your creativity, built for production
-#### Windows only for now
 
 ### Planned Features
- 
-2. Texture synthesis
-    - Create texture for tiling
-3. In-game AI evaluation
+2. In-game AI evaluation
     - Containable API
-4. Unlimited expensionality
+3. Unlimited expensionality
     - Backend with CNTK that unlock the best performance
-5. Examples 
+4. Examples 
     - Various applications to show the potential of CNTK
-6. Rich library
+5. Rich library
     - Support CNTK Model V2
     - Include downloader to common state of the art available deep neural network
-7. Built for performance
+6. Built for performance
     - Calculation are all in background thread
     - Paralleled calculation
     - GPU Support
+7. Crossplatform 
+    - the entire framework is based on .Net 4.6
+    - in English, that means it should run on most mainstream platforms that Unity supports (tested only on Windows and Ubuntu)
+8. Full Source code
+    - Entire implementation is C#
+    - Poke around and let us know if you find any bug or improvement
+
+
+### Requirement
+1. Unity 2017 or later
+    - Unity 5.x or before will NOT work for their lack of .NET 4.6 support
 
 
 ### Includes
