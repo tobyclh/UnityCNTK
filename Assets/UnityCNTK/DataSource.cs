@@ -1,24 +1,27 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class DataSource : MonoBehaviour {
-
-    public UnityEngine.Object source;
-    public enum PredefinedSource
+namespace UnityCNTK
+{
+    public class DataSource : MonoBehaviour
     {
-        none, position, rotation, quaternion
+        public Object source;
+        public enum PredefinedSource
+        {
+            none, pos, rot, quat, velocity, acceleration
+        }
+
+        private CNTKManager manager;
+        void Start()
+        {
+            
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
     }
-    /// <summary>
-    /// 
-    /// </summary>
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
 }
