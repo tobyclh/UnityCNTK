@@ -57,14 +57,16 @@ namespace UnityCNTK
                 }
             }
         }
-
-        public bool KeepModelLoaded = false;
-        public DeviceDescriptor device;
+        /// <summary>
+        /// Load the model automatically on start
+        /// </summary>
+        public bool LoadOnStart = true;
         protected Thread thread;
         public virtual void LoadModel()
         {
             Assert.IsNotNull(relativeModelPath);
             var absolutePath = System.IO.Path.Combine(Environment.CurrentDirectory, relativeModelPath);
+            Thread loadThread = new Thread(() => function = Function.Load(absolutePath, CNTKManager.device));
         }
 
         public virtual void Evaluate()
