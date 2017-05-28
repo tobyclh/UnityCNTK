@@ -8,6 +8,7 @@ using System.Timers;
 using System.Threading;
 using CNTK;
 using System;
+using UnityEngine.Events;
 
 namespace UnityCNTK
 {
@@ -16,6 +17,7 @@ namespace UnityCNTK
     // which are very useful in general.
     public class Model : ScriptableObject
     {
+        public UnityEvent OnModelLoaded;
         public string Name;
         public string relativeModelPath;
         public Function function;
