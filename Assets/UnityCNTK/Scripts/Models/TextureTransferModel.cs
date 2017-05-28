@@ -7,7 +7,6 @@ using System.IO;
 using UnityCNTK;
 using System.Net;
 using System.Threading; 
-using Accord.Math.Optimization;
 using UnityEngine.Assertions;
 namespace UnityCNTK
 {
