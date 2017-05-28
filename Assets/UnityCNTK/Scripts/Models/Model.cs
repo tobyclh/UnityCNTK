@@ -13,53 +13,25 @@ using UnityEngine.Events;
 namespace UnityCNTK
 {
     /// <summary>
-    /// Base class that 
+    /// Base class for all models
     /// </summary>
+
     public class Model : ScriptableObject
     {
-        public UnityEvent OnModelLoaded;
-        
-        private Model(){}
-        
-        public string Name;
+        public UnityEvent<Model> OnModelLoaded;
+        public UnityEvent<Model, System.Object> OnPostProcessed;
+
+        public Model() { }
+
         public string relativeModelPath;
         public Function function;
-        private UnityEngine.Object _input;
-        public UnityEngine.Object input
-        {
-            get { return _input; }
-            set
-            {
-                if(isEvaluating)
-                {
-                    Debug.LogError("Input cannot be set when an evaluation is carrying out");
-                }
-                else
-                {
-                    _input = value;
-                }
-            }
-        }
-        public bool isEvaluating = false;
-
-        private UnityEngine.Object _output = null;
-
-        public UnityEngine.Object output
+        public void OnEnable()
         {
 
-            get { return _output; }
-            set
-            {
-                if(isEvaluating)
-                {
-                    Debug.LogError("Input cannot be set when an evaluation is carrying out");
-                }
-                else
-                {
-                    _output = value;
-                }
-            }
         }
+
+        public bool isEvaluating { get; protected set; }
+        protected System.Object output;
         /// <summary>
         /// Load the model automatically on start
         /// </summary>
@@ -70,48 +42,49 @@ namespace UnityCNTK
             Assert.IsNotNull(relativeModelPath);
             var absolutePath = System.IO.Path.Combine(Environment.CurrentDirectory, relativeModelPath);
             Thread loadThread = new Thread(() => function = Function.Load(absolutePath, CNTKManager.device));
+            OnModelLoaded.Invoke(this);
         }
 
-        public virtual void Evaluate()
+        public virtual void Evaluate(Value input)
         {
+            if (isEvaluating)
+            {
+                Debug.LogError("A model can only evaluate 1 object at a time");
+            }
+            if (function == null) LoadModel();
             Assert.IsNotNull(function);
+            Assert.IsNotNull(input);
             isEvaluating = true;
-            var IOValues = OnPreprocess();
             thread = new Thread(() =>
             {
-                function.Evaluate(IOValues[0], IOValues[1], CNTKManager.device);
-                OnEvaluated(IOValues[1]);
+                var outputPair = new Dictionary<Variable,Value>(){{function.Output, null}};
+                function.Evaluate(new Dictionary<Variable,Value>(){{function.Arguments.Single(), input}}, outputPair, CNTKManager.device);
+                OnEvaluated(outputPair);
+                OnPostProcessed.Invoke(this, output);
                 isEvaluating = false;
             });
             thread.IsBackground = true;
             thread.Start();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        protected virtual List<Dictionary<Variable, Value>> OnPreprocess()
-        {
-            throw new NotImplementedException();
-        }
 
-        // process output data to fit user requirement
-        // you should set the convert output Value to 
+        /// <summary>
+        /// Convert outputdatamap to user defined value, store in output
+        /// See HelperClasses/Convert.cs for some example functions that do so
+        /// </summary>
+        /// <param name="outputDataMap">output data map that result from evaluation </param>
         protected virtual void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
         {
+
             throw new NotImplementedException();
         }
-
-        public virtual void OnPostProcessed()
-        {}
 
         /// <summary>
         /// Unload model from memory
         /// </summary>
         public void UnloadModel()
         {
-            if(function != null)
+            if (function != null)
             {
                 function.Dispose();
             }

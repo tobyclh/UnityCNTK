@@ -6,31 +6,28 @@ using CNTK;
 using System;
 
 namespace UnityCNTK{
+    
     /// <summary>
     /// Streaming model streams a datasource to a model every set period
     /// </summary>
+    [CreateAssetMenu(fileName = "StreamingModel", menuName = "UnityCNTk/Model/StreamingModel")]
     public class StreamingModel: Model 
     {
-
-		public new DataSource input;
+        public DataSource source;
 
 		[Tooltip("Evaluation carry out in every specificed second")]
 		public double evaluationPeriod = 10;
-
-        public override void Evaluate()
+        
+        public void StartStreaming()
         {
-			if (isEvaluating)
-			{
-            	throw new TimeoutException("Evalauation not finished before the another call, ");
-			}
-            isEvaluating = true;
-			
+            
         }
 
-        public override void LoadModel()
+        public void StopStreaming()
         {
-            throw new NotImplementedException();
+
         }
+
 
         protected override void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
         {
