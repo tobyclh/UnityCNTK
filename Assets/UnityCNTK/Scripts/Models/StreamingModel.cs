@@ -6,15 +6,15 @@ using CNTK;
 using System;
 
 namespace UnityCNTK{
-    public class StreamingModel<T, V> : Model 
-    where T:IConvertible 
-    where V:IConvertible
+    /// <summary>
+    /// Streaming model streams a datasource to a model every set period
+    /// </summary>
+    public class StreamingModel: Model 
     {
 
-		public new T input;
-		public new V output;
+		public new DataSource input;
 
-		// Evaluation carry out in every 'evaluationPeriod' second
+		[Tooltip("Evaluation carry out in every specificed second")]
 		public double evaluationPeriod = 10;
 
         public override void Evaluate()
