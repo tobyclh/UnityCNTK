@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UnityCNTK{
 	public class CNTKManager : MonoBehaviour {
 		public static CNTKManager instance;
-		public List<StreamingModel<IConvertible, IConvertible>> managedModels = new List<StreamingModel<IConvertible, IConvertible>>();
+		public List<Model> managedModels = new List<Model>();
 		
 		void Start () {
 			MakeSingleton();
