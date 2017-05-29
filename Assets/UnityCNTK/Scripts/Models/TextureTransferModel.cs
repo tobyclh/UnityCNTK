@@ -30,14 +30,6 @@ namespace UnityCNTK
             output = textures;
         }
 
-        protected override List<Dictionary<Variable, Value>> OnPreprocess(UnityEngine.Object input)
-        {
-            var inputVar = function.Arguments.Single();
-            var resized = ((Texture2D)input).ResampleAndCrop(width, height);
-            var inputDataMap = new Dictionary<Variable, Value>() { { inputVar, resized.ToValue(CNTKManager.device) } };
-            var outputDataMap = new Dictionary<Variable, Value>() { { function.Output, null } };
-            return new List<Dictionary<Variable, Value>>() { inputDataMap, outputDataMap };
-        }
     }
 
 }
