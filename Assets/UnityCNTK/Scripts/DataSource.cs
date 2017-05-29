@@ -5,6 +5,7 @@ using UnityEngine.Events;
 using System;
 using UnityEngine.Assertions;
 using CNTK;
+using UnityEngine.UI;
 namespace UnityCNTK
 {
     public class DataSource : MonoBehaviour
@@ -26,6 +27,7 @@ namespace UnityCNTK
         private RenderTexture renderTexture;
         private Camera cam;
         private Rect rect;
+        private WebCamTexture webcamTexture;
         private IntPtr webcamTexPtr;
         void Start()
         {
@@ -79,8 +81,13 @@ namespace UnityCNTK
                     }
                 case PredefinedSource.webcam:
                     {
-                        var WebcamTexture = new WebCamTexture();
-                        webcamTexPtr = WebcamTexture.GetNativeTexturePtr();
+                        webcamTexture = new WebCamTexture(width,height);
+                        webcamTexPtr = webcamTexture.GetNativeTexturePtr();
+                        //testing code
+                        var rawImage = GetComponent<RawImage>();
+                        Assert.IsNotNull(rawImage);
+                        rawImage.material.mainTexture = webcamTexture;
+                        webcamTexture.Play();
                         GetData = new getData(() =>
                         {
                             dummyTexture.UpdateExternalTexture(webcamTexPtr);
