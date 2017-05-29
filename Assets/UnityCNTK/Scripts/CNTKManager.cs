@@ -10,7 +10,6 @@ namespace UnityCNTK
     {
         public static CNTKManager instance;
         public List<Model> managedModels = new List<Model>();
-        public List<int> streamingModels = new List<int>();
         public static DeviceDescriptor device;
         public enum HardwareOptions
         {
