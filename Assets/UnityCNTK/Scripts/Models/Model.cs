@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine.Assertions;
 using System.Linq;
 using UnityEngine;
-using UnityEditor;
 using System.Timers;
 using System.Threading;
 using CNTK;
