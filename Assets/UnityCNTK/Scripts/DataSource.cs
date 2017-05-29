@@ -11,7 +11,7 @@ namespace UnityCNTK
     {
         public enum PredefinedSource
         {
-            none, pos, rot, quat, velocity, acceleration, camera, custom
+            none, pos, rot, quat, velocity, acceleration, camera, custom, webcam
         }
 
         public PredefinedSource pSource;
@@ -26,7 +26,7 @@ namespace UnityCNTK
         private RenderTexture renderTexture;
         private Camera cam;
         private Rect rect;
-
+        private IntPtr webcamTexPtr;
         void Start()
         {
             transform = base.transform;
@@ -67,11 +67,23 @@ namespace UnityCNTK
                         }
                         rect = new Rect(0, 0, width, height);
                         dummyTexture = new Texture2D(width, height);
-                        GetData = new getData(()=>
+                        GetData = new getData(() =>
                         {
                             cam.targetTexture = renderTexture;
                             cam.Render();
                             dummyTexture.ReadPixels(rect, 0, 0, false);
+
+                            return dummyTexture.ToValue(CNTKManager.device);
+                        });
+                        break;
+                    }
+                case PredefinedSource.webcam:
+                    {
+                        var WebcamTexture = new WebCamTexture();
+                        webcamTexPtr = WebcamTexture.GetNativeTexturePtr();
+                        GetData = new getData(() =>
+                        {
+                            dummyTexture.UpdateExternalTexture(webcamTexPtr);
                             return dummyTexture.ToValue(CNTKManager.device);
                         });
                         break;
