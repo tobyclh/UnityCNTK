@@ -61,7 +61,14 @@ namespace UnityCNTK
 
         void Update()
         {
-
+            if (Input.GetKeyUp(KeyCode.S))
+            {
+                foreach (StreamingModel sm in managedModels.Where(m => (StreamingModel)m != null))
+                {
+                    StartStreaming(sm.name);
+                    Debug.Log("Start Streaming @ " + sm.name);
+                }
+            }
         }
 
 
