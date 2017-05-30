@@ -21,14 +21,24 @@ namespace UnityCNTK
 		public float evaluationPeriod = 10;
         private bool shouldStop = false;
         private bool isStreaming = false;
-        public IEnumerator StartStreaming()
+        public void StartStreaming()
         {
             Assert.IsFalse(isStreaming, name + " is already streaming");
-            while (!shouldStop)
-            {
-                Evaluate(source.GetData());
-                yield return new WaitForSeconds(evaluationPeriod);
-            }
+            Debug.Log("Start Streaming");
+            InvokeRepeating("MyStream", 0, evaluationPeriod);
+        }
+
+        private void MyStream()
+        {
+            Debug.Log("Grabbing data");
+            var data = source.GetData();
+            Evaluate(data);
+            //    yield return new WaitForSeconds(evaluationPeriod);
+            //}
+        }
+        protected override void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
+        {
+            Debug.Log("OnEvaluated OVERRIDED");
         }
 
         public void StopStreaming()

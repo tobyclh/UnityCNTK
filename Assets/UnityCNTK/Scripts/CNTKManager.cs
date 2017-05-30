@@ -103,7 +103,7 @@ namespace UnityCNTK
             //calling single ensure there is only 1 
             var model = managedModels.Where(x => x.name == modelName).Single();
             var streamingModel = model as StreamingModel;
-            StartCoroutine(streamingModel.StartStreaming());
+            streamingModel.StartStreaming();
         }
     }
 
