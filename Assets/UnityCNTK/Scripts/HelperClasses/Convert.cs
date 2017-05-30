@@ -71,18 +71,21 @@ namespace UnityCNTK
                 int imageSize = channelSize;
                 float[] floatArray = new float[count * imageSize];
                 NDShape shape = NDShape.CreateNDShape(new int[] { tensorWidth, tensorHeight, 1 });
-                Parallel.For(0, count, (int imageCounter) =>
+                Assert.IsTrue(textures.All(t => t.width == tensorWidth));
+                Assert.IsTrue(textures.All(t => t.height == tensorHeight));
+                for(int imageCounter = 0; imageCounter < count; imageCounter++)
                 {
                     var texture = textures.ElementAt(imageCounter);
-                    Assert.AreEqual(texture.width, tensorWidth);
-                    Assert.AreEqual(texture.height, tensorHeight);
                     var pixels = texture.GetPixels();
                     int pixelCount = pixels.Count();
                     if (smallTexture)
                     {
                         for (int i = 0; i < pixelCount; i++)
                         {
-                            floatArray[imageCounter * imageSize + i] = pixels[pixelCount].grayscale;
+                            //var greyPixel = pixels[pixelCount].grayscale;
+                            //var index = imageCounter * imageSize + i;
+                            //floatArray[index] = greyPixel;
+                            floatArray[imageCounter * imageSize + i] = pixels[i].grayscale;
                         }
                     }
                     else
@@ -96,7 +99,7 @@ namespace UnityCNTK
                         });
                     }
 
-                });
+                };
                 return Value.CreateBatch(shape, floatArray, device, false);
 
             }
