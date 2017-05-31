@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using System.Timers;
 using System.Threading;
+using System.Threading.Tasks;
 using CNTK;
 using System;
 using UnityEngine.Events;
@@ -13,81 +14,46 @@ namespace UnityCNTK
 {
     /// <summary>
     /// Base class for all models
+    /// currently only SISO (Single In Single Out) model is supported, which should cover most cases
     /// </summary>
 
-    public class Model : ScriptableObject
+    public class Model<U, V> : _Model
     {
-        public UnityEvent<Model> OnModelLoaded;
-        public UnityEvent<Model, System.Object> OnPostProcessed;
 
-        public Model() { }
-
-        public string relativeModelPath;
-        public Function function;
-        public void OnEnable()
+        public virtual async Task<V> Evaluate(U input)
         {
-
-        }
-
-        public bool isEvaluating { get; protected set; }
-        protected System.Object output;
-        /// <summary>
-        /// Load the model automatically on start
-        /// </summary>
-        public bool LoadOnStart = true;
-        protected Thread thread;
-        public virtual void LoadModel()
-        {
-            Assert.IsNotNull(relativeModelPath);
-            var absolutePath = System.IO.Path.Combine(Environment.CurrentDirectory, relativeModelPath);
-            Thread loadThread = new Thread(() => function = Function.Load(absolutePath, CNTKManager.device));
-            OnModelLoaded.Invoke(this);
-        }
-
-        public virtual void Evaluate(Value input)
-        {
-            if (isEvaluating)
+            if (!isReady)
             {
                 Debug.LogError("A model can only evaluate 1 object at a time");
             }
+            isReady = false;
+            var inputVal = OnPreprocess(input);
             if (function == null) LoadModel();
             Assert.IsNotNull(function);
-            Assert.IsNotNull(input);
-            isEvaluating = true;
-            thread = new Thread(() =>
+            var output = await Task.Run(() =>
             {
-                var outputPair = new Dictionary<Variable,Value>(){{function.Output, null}};
-                function.Evaluate(new Dictionary<Variable,Value>(){{function.Arguments.Single(), input}}, outputPair, CNTKManager.device);
-                OnEvaluated(outputPair);
-                OnPostProcessed.Invoke(this, output);
-                isEvaluating = false;
+                Debug.Log("Evaluation");
+                var outputPair = new Dictionary<Variable, Value>() { { function.Output, null } };
+                var variable = function.Arguments.Single();
+                var inputPair = new Dictionary<Variable, Value>() { { variable, inputVal } };
+                function.Evaluate(inputPair, outputPair, CNTKManager.device);
+                var _output = OnPostProcess(outputPair.Single().Value);
+                isReady = true;
+                return _output;
             });
-            thread.IsBackground = true;
-            thread.Start();
+            return output;
         }
 
-
-        /// <summary>
-        /// Convert outputdatamap to user defined value, store in output
-        /// See HelperClasses/Convert.cs for some example functions that do so
-        /// </summary>
-        /// <param name="outputDataMap">output data map that result from evaluation </param>
-        protected virtual void OnEvaluated(Dictionary<Variable, Value> outputDataMap)
+        public virtual Value OnPreprocess(U input)
         {
-
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Unload model from memory
-        /// </summary>
-        public void UnloadModel()
+        public virtual V OnPostProcess(Value output)
         {
-            if (function != null)
-            {
-                function.Dispose();
-            }
+            throw new NotImplementedException();
         }
+
     }
 
 }
