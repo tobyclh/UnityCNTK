@@ -507,9 +507,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86dc6dea605154e4dbc2ae768387da6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  relativeModelPath: Assets/UnityCNTK/RawModels/FERPlus.dnn
+  OnModelLoaded:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  relativeModelPath: Assets/UnityCNTK/RawModels/FERPlusFinal.dnn
   LoadOnStart: 1
-  source: {fileID: 712244105}
   evaluationPeriod: 1
 --- !u!1 &2034604693
 GameObject:
