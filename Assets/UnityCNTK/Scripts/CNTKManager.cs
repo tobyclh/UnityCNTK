@@ -16,7 +16,7 @@ namespace UnityCNTK
             Auto, CPU, GPU, Default
         }
         [Tooltip("Where to put all the work, Avoid 'Default' unless you are familiar with the usage")]
-        public HardwareOptions hardwareOption = HardwareOptions.Auto;
+        public HardwareOptions hardwareOption = HardwareOptions.CPU;
 
 
         void Awake()
