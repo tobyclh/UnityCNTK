@@ -9,7 +9,7 @@ namespace UnityCNTK
     public class CNTKManager : MonoBehaviour
     {
         public static CNTKManager instance;
-        public List<Model> managedModels = new List<Model>();
+        public List<_Model> managedModels = new List<_Model>();
         public static DeviceDescriptor device;
         public enum HardwareOptions
         {
@@ -63,10 +63,14 @@ namespace UnityCNTK
         {
             if (Input.GetKeyUp(KeyCode.S))
             {
-                foreach (StreamingModel sm in managedModels.Where(m => (StreamingModel)m != null))
+                foreach (var m in managedModels)
                 {
-                    StartStreaming(sm.name);
-                    Debug.Log("Start Streaming @ " + sm.name);
+                    if( m is IStreamModel)
+                    {
+                        ((IStreamModel)m).StartStreaming();
+                        Debug.Log(" Start Streaming");
+                    }
+
                 }
             }
         }
@@ -96,14 +100,6 @@ namespace UnityCNTK
             {
                 device = DeviceDescriptor.CPUDevice;
             }
-        }
-
-        public void StartStreaming(string modelName)
-        {
-            //calling single ensure there is only 1 
-            var model = managedModels.Where(x => x.name == modelName).Single();
-            var streamingModel = model as StreamingModel;
-            streamingModel.StartStreaming();
         }
     }
 
