@@ -19,7 +19,7 @@ namespace UnityCNTK
 
     public class Model<U, V> : _Model
     {
-
+        public DataSource<U> dataSource;
         public virtual async Task<V> Evaluate(U input)
         {
             if (!isReady)
