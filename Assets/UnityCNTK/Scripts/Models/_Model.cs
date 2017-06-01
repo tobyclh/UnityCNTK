@@ -42,8 +42,7 @@ namespace UnityCNTK
                 if (OnModelLoaded != null)
                     OnModelLoaded.Invoke();
                 isReady = true;
-                Debug.Log("Model Loaded" + name);
-
+                Debug.Log("Model Loaded");
             });
             loadThread.Start();
         }
