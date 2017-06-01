@@ -12,8 +12,8 @@ namespace UnityCNTK
         }
         public TexturePredefinedSources source;
         public Camera cam;
-        public int width;
-        public int height;
+        public int width = 64;
+        public int height = 64;
         protected Texture2D dummyTexture;
         protected RenderTexture renderTexture;
         protected Rect rect;
