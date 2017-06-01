@@ -17,11 +17,13 @@
     - Paralleled calculation
     - GPU Support
 7. Crossplatform 
-    - the entire framework is based on .Net 4.6
+    - written in .Net 4.6
     - in English, that means it should run on most mainstream platforms that Unity supports (tested only on Windows and Ubuntu)
 8. Full Source code
     - Entire implementation is C#
     - Poke around and let us know if you find any bug or improvement
+9. GUI support
+    - 
 
 
 ### Requirement
@@ -50,3 +52,23 @@
 ### Technical Background
 This section is dedicated for those who want to understand the models that come with
 this problem.
+
+### FAQ
+0. What is CNTK
+    Cognitive Toolkit from Microsoft, wonderful open source Deep learning framework.
+    Awesome if you care about accuracy, speed and crossplatform support. Here is a [writeup](https:// somewriteup.org) that compares CNTK with some other platforms. 
+
+1. Will I be able to train my XXXX network with this addon?
+    No.
+    As of 6/2017, Microsoft only provides Evaluation library in C#, which is why we do NOT have training in C#, this won't change unless Microsoft exposes more API in C#.
+    However, we do provide data exporting scripts that can help you export data gathered from Unity to train in C++ / Python.
+
+2. Does this interface support XXX network trained in other framework like tensorflow etc?
+    No directly, all models have to be in CNTK format.
+    However, Microsoft does provide some very well known pretrained network in such format, like VGG-19 etc, and we have a downloader just for that :) 
+    There are also easy way that you can convert some models from other script to CNTK format.
+    
+3. Is legacy models (CNTK V1 Model from brainscript) supported?
+    Yes! We do support both CNTK models V1 and V2.
+
+4. Can I achieve 
