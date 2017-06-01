@@ -7,6 +7,10 @@ using System.Threading;
 using UnityEngine.Assertions;
 namespace UnityCNTK
 {
+    /// <summary>
+    /// the non-generic base class for all model
+    /// only meant to be used for model management and GUI scripting, not in-game
+    /// </summary>
     public class _Model : MonoBehaviour{
         public UnityEvent OnModelLoaded;
         public string relativeModelPath;
