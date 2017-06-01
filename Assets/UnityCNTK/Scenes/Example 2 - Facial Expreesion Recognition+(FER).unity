@@ -528,6 +528,7 @@ MonoBehaviour:
   relativeModelPath: Assets/UnityCNTK/RawModels/FERPlusFinal.dnn
   LoadOnStart: 1
   evaluationPeriod: 1
+  dataSource: {fileID: 712244106}
 --- !u!1 &2034604693
 GameObject:
   m_ObjectHideFlags: 0
