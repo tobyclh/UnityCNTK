@@ -49,14 +49,14 @@ namespace UnityCNTK
                     {
                         webcamTexture = new WebCamTexture(width, height);
                         webcamTexPtr = webcamTexture.GetNativeTexturePtr();
-                        //testing code
                         var rawImage = GetComponent<RawImage>();
+                        dummyTexture = new Texture2D(width, height);
                         Assert.IsNotNull(rawImage);
                         rawImage.material.mainTexture = webcamTexture;
                         webcamTexture.Play();
                         GetData = new getData(() =>
                         {
-                            dummyTexture.UpdateExternalTexture(webcamTexPtr);
+                            dummyTexture.SetPixels(webcamTexture.GetPixels());
                             return dummyTexture;
                         });
                         break;
