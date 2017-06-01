@@ -5,6 +5,8 @@ using UnityEngine.Assertions;
 using UnityEditor;
 using System;
 using CNTK;
+using UnityEngine;
+
 namespace UnityCNTK
 {
     [CustomEditor(typeof(_Model), true)]
@@ -14,6 +16,12 @@ namespace UnityCNTK
         private List<Variable> inputList = new List<Variable>();
         private List<Variable> outputList = new List<Variable>();
         private bool isValidPath = false;
+
+        public override void DrawPreview(Rect previewArea)
+        {
+            base.DrawPreview(previewArea);
+            path = null;
+        }
         public override void OnInspectorGUI()
         {
             _Model model = (_Model)target;
