@@ -20,7 +20,7 @@ namespace UnityCNTK
     public class Model<U, V> : _Model
     {
         public DataSource<U> dataSource;
-        public virtual async Task<V> Evaluate(U input)
+        public virtual async void Evaluate(U input)
         {
             if (!isReady)
             {
@@ -28,25 +28,28 @@ namespace UnityCNTK
             }
             isReady = false;
             var inputVal = OnPreprocess(input);
-            if (function == null) LoadModel();
             Assert.IsNotNull(function);
-            var output = await Task.Run(() =>
+            
+            var outputPair = new Dictionary<Variable, Value>() { { function.Output, null } };
+            var variable = function.Arguments.Single();
+            var inputPair = new Dictionary<Variable, Value>() { { variable, inputVal } };
+            await Task.Run(() =>
             {
-                Debug.Log("Evaluation");
-                var outputPair = new Dictionary<Variable, Value>() { { function.Output, null } };
-                var variable = function.Arguments.Single();
-                var inputPair = new Dictionary<Variable, Value>() { { variable, inputVal } };
+                //Debug.Log("Evaluation");
                 function.Evaluate(inputPair, outputPair, CNTKManager.device);
-                var _output = OnPostProcess(outputPair.Single().Value);
-                isReady = true;
-                return _output;
             });
-            return output;
+            var _output = OnPostProcess(outputPair.Single().Value);
+            OnEvaluted(_output);
+            isReady = true;
         }
 
         public virtual Value OnPreprocess(U input)
         {
             throw new NotImplementedException();
+        }
+
+        public virtual void OnEvaluted(V output)
+        {
         }
 
         public virtual V OnPostProcess(Value output)
