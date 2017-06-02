@@ -47,8 +47,7 @@ namespace UnityCNTK
                     }
                 case TexturePredefinedSources.webcam:
                     {
-                        webcamTexture = new WebCamTexture(width, height);
-                        webcamTexPtr = webcamTexture.GetNativeTexturePtr();
+                        webcamTexture = new WebCamTexture();
                         var rawImage = GetComponent<RawImage>();
                         dummyTexture = new Texture2D(width, height);
                         Assert.IsNotNull(rawImage);
@@ -56,7 +55,11 @@ namespace UnityCNTK
                         webcamTexture.Play();
                         GetData = new getData(() =>
                         {
-                            dummyTexture.SetPixels(webcamTexture.GetPixels());
+                            dummyTexture.SetPixels(webcamTexture.ResampleAndCrop(width, height).GetPixels());
+                            var jpgBytes = dummyTexture.EncodeToJPG();
+                            var f = System.IO.File.Create("Banana.jpg");
+                            f.Write(jpgBytes, 0, jpgBytes.Length);
+                            f.Close();
                             return dummyTexture;
                         });
                         break;
