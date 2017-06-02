@@ -13,10 +13,9 @@ namespace UnityCNTK
     /// </summary>
     public class _Model : MonoBehaviour{
         public UnityEvent OnModelLoaded;
-        public string relativeModelPath;
+        public TextAsset rawModel;
         public Function function;
         private bool _isReady = false;
-
         public bool isReady { get; protected set; }
         /// <summary>
         /// Load the model automatically on start
@@ -26,14 +25,12 @@ namespace UnityCNTK
 
         public virtual void LoadModel()
         {
-            Assert.IsNotNull(relativeModelPath);
-            var absolutePath = System.IO.Path.Combine(Environment.CurrentDirectory, relativeModelPath);
-            Thread loadThread = new Thread(() =>
-            {
+            Assert.IsNotNull(rawModel);
+            
                 Debug.Log("Started thread");
                 try
                 {
-                    function = Function.Load(absolutePath, CNTKManager.device);
+                    function = Function.Load(rawModel.bytes, CNTKManager.device);
                 }
                 catch (Exception e)
                 {
@@ -42,9 +39,7 @@ namespace UnityCNTK
                 if (OnModelLoaded != null)
                     OnModelLoaded.Invoke();
                 isReady = true;
-                Debug.Log("Model Loaded");
-            });
-            loadThread.Start();
+                Debug.Log("Model Loaded : " +rawModel.name);
         }
         public void UnloadModel()
         {
