@@ -7,6 +7,8 @@ using UnityEngine.Assertions;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace UnityCNTK
 {
@@ -82,9 +84,6 @@ namespace UnityCNTK
                     {
                         for (int i = 0; i < pixelCount; i++)
                         {
-                            //var greyPixel = pixels[pixelCount].grayscale;
-                            //var index = imageCounter * imageSize + i;
-                            //floatArray[index] = greyPixel;
                             floatArray[imageCounter * imageSize + i] = pixels[i].grayscale;
                         }
                     }
@@ -101,7 +100,6 @@ namespace UnityCNTK
 
                 };
                 return Value.CreateBatch(shape, floatArray, device, false);
-
             }
         }
 
@@ -199,7 +197,15 @@ namespace UnityCNTK
             return texs;
         }
 
-
+        public static byte[] ToByteArray(this System.Object obj)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            using (var ms = new MemoryStream())
+            {
+                bf.Serialize(ms, obj);
+                return ms.ToArray();
+            }
+        }
 
 
     }
