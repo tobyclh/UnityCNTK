@@ -291,6 +291,7 @@ GameObject:
   - component: {fileID: 712244102}
   - component: {fileID: 712244104}
   - component: {fileID: 712244103}
+  - component: {fileID: 712244107}
   - component: {fileID: 712244105}
   - component: {fileID: 712244106}
   m_Layer: 5
@@ -372,10 +373,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1df6cc4d3ab6074a90cb5893f6a0adc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &712244107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 712244101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f07868e61a832e347931e63295e7f629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   source: 1
   cam: {fileID: 0}
-  width: 64
-  height: 64
 --- !u!1 &875990596
 GameObject:
   m_ObjectHideFlags: 0
@@ -525,10 +535,12 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
-  relativeModelPath: Assets/UnityCNTK/RawModels/FERPlusFinal.dnn
+  rawModel: {fileID: 4900000, guid: d021ee73c8c421345a4b6c7e4643c89b, type: 3}
   LoadOnStart: 1
   evaluationPeriod: 1
-  dataSource: {fileID: 712244106}
+  dataSource: {fileID: 712244107}
+  width: 64
+  height: 64
 --- !u!1 &2034604693
 GameObject:
   m_ObjectHideFlags: 0

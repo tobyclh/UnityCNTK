@@ -16,6 +16,14 @@ namespace UnityCNTK
         private bool shouldStop = false;
         private bool isStreaming = false;
         public new Texture2DSource dataSource;
+        public int width = 64;
+        public int height = 64;
+
+        void Start()
+        {
+            Assert.IsNotNull(dataSource);
+            Assert.IsTrue(dataSource.source == Texture2DSource.TexturePredefinedSources.webcam);
+        }
         public void StartStreaming()
         {
             Assert.IsFalse(isStreaming, " is already streaming");
@@ -49,8 +57,8 @@ namespace UnityCNTK
 
         public override Value OnPreprocess(Texture2D input)
         {
+            return input.ResampleAndCrop(width, height).ToValue(CNTKManager.device, true);
             //Debug.Log("OnPreprocess FER+");
-            return input.ToValue(CNTKManager.device, true);
         }
 
         public override void OnEvaluted(int output)

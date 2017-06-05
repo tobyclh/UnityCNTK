@@ -2,18 +2,17 @@
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 using System;
+using System.Threading.Tasks;
 namespace UnityCNTK
 {
     public class Texture2DSource : DataSource<Texture2D>
     {
         public enum TexturePredefinedSources
         {
-            camera, webcam, none, custom
+            camera, webcam, custom
         }
         public TexturePredefinedSources source;
         public Camera cam;
-        public int width = 64;
-        public int height = 64;
         protected Texture2D dummyTexture;
         protected RenderTexture renderTexture;
         protected Rect rect;
@@ -34,8 +33,8 @@ namespace UnityCNTK
                                 throw new MissingComponentException("Missing Camera");
                             }
                         }
-                        rect = new Rect(0, 0, width, height);
-                        dummyTexture = new Texture2D(width, height);
+                        rect = new Rect(0, 0, cam.pixelWidth, cam.pixelHeight);
+                        dummyTexture = new Texture2D(cam.pixelWidth, cam.pixelHeight);
                         GetData = new getData(() =>
                         {
                             cam.targetTexture = renderTexture;
@@ -48,18 +47,15 @@ namespace UnityCNTK
                 case TexturePredefinedSources.webcam:
                     {
                         webcamTexture = new WebCamTexture();
-                        var rawImage = GetComponent<RawImage>();
-                        dummyTexture = new Texture2D(width, height);
-                        Assert.IsNotNull(rawImage);
-                        rawImage.material.mainTexture = webcamTexture;
                         webcamTexture.Play();
+                        var rawImage = GetComponent<RawImage>();
+                        rawImage.material.mainTexture = webcamTexture;
+                        dummyTexture = new Texture2D(rawImage.material.mainTexture.width, rawImage.material.mainTexture.height);
+                        Debug.Log("Webcam Texture is " + rawImage.material.mainTexture.width.ToString() + " " + rawImage.material.mainTexture.height.ToString());
+                        Assert.IsNotNull(rawImage);
                         GetData = new getData(() =>
                         {
-                            dummyTexture.SetPixels(webcamTexture.ResampleAndCrop(width, height).GetPixels());
-                            var jpgBytes = dummyTexture.EncodeToJPG();
-                            var f = System.IO.File.Create("Banana.jpg");
-                            f.Write(jpgBytes, 0, jpgBytes.Length);
-                            f.Close();
+                            dummyTexture.SetPixels(webcamTexture.GetPixels());
                             return dummyTexture;
                         });
                         break;
@@ -67,7 +63,7 @@ namespace UnityCNTK
                 default:
                     {
                         Debug.Log("Texture2D Not streaming");
-                        dummyTexture = new Texture2D(width, height);
+                        dummyTexture = new Texture2D(1, 1);
                         GetData = new getData(() => dummyTexture);
                         break;
                     }

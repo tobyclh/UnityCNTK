@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEditor;
 using System;
@@ -14,6 +15,7 @@ namespace UnityCNTK
         private List<Variable> inputList = new List<Variable>();
         private List<Variable> outputList = new List<Variable>();
         private bool isValidPath = false;
+        private TextAsset _model;
         public override void OnInspectorGUI()
         {
             _Model model = (_Model)target;
@@ -23,15 +25,24 @@ namespace UnityCNTK
             if (model.rawModel != null)
             {
                 isValidPath = false;
-                try
+                if (_model != model.rawModel)
                 {
-                    var function = Function.Load(model.rawModel.bytes, DeviceDescriptor.CPUDevice);
-                    isValidPath = true;
-                    inputList = function.Arguments.ToList();
-                    outputList = function.Outputs.ToList();
+                    try
+                    {
+                        var function = Function.Load(model.rawModel.bytes, DeviceDescriptor.CPUDevice);
+                        isValidPath = true;
+                        inputList = function.Arguments.ToList();
+                        outputList = function.Outputs.ToList();
+                        _model = model.rawModel;
+                    }
+                    catch
+                    {
+                    }
+
                 }
-                catch
+                else
                 {
+                    isValidPath = true;
                 }
             }
 

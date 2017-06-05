@@ -43,28 +43,15 @@ namespace UnityCNTK
 
                     Assert.AreEqual(texture.width, tensorWidth);
                     Assert.AreEqual(texture.height, tensorHeight);
-                    var pixels = texture.GetPixels();
+                    var pixels = texture.GetPixels32();
                     int pixelCount = pixels.Count();
-                    Parallel.For(0, channelCount, (int c) =>
+                    int i;
+                    for (i = 0; i < pixelCount; i++)
                     {
-                        if (smallTexture)
-                        {
-                            for (int i = 0; i < pixelCount; i++)
-                            {
-                                floatArray[imageCounter * imageSize + i * channelCount + c] = pixels[pixelCount][c];
-                            }
-                        }
-                        else
-                        {
-                            Parallel.For(0, tensorHeight, (int row) =>
-                            {
-                                for (int j = 0; j < tensorWidth; j++)
-                                {
-                                    floatArray[imageCounter * imageSize + row * tensorWidth + j + c] = pixels[row * tensorWidth + j][c];
-                                }
-                            });
-                        }
-                    });
+                        floatArray[imageCounter * imageSize + i + channelCount * 0] = (int)pixels[pixelCount].r;
+                        floatArray[imageCounter * imageSize + i + channelCount * 1] = (int)pixels[pixelCount].g;
+                        floatArray[imageCounter * imageSize + i + channelCount * 2] = (int)pixels[pixelCount].b;
+                    }
                 });
                 return Value.CreateBatch(shape, floatArray, device, false);
             }
@@ -75,7 +62,7 @@ namespace UnityCNTK
                 NDShape shape = NDShape.CreateNDShape(new int[] { tensorWidth, tensorHeight, 1 });
                 Assert.IsTrue(textures.All(t => t.width == tensorWidth));
                 Assert.IsTrue(textures.All(t => t.height == tensorHeight));
-                for(int imageCounter = 0; imageCounter < count; imageCounter++)
+                for (int imageCounter = 0; imageCounter < count; imageCounter++)
                 {
                     var texture = textures.ElementAt(imageCounter);
                     var pixels = texture.GetPixels();
@@ -207,6 +194,50 @@ namespace UnityCNTK
             }
         }
 
+
+        /// <summary>
+        /// Convert color array to float array parallelly for each channel
+        /// </summary>
+        /// <param name="pixels"></param>
+        /// <param name="useAlpha"></param>
+        /// <returns></returns>
+        public static float[] ToFloatArray(this Color[] pixels, bool useAlpha = false, bool monochrome = false)
+        {
+            int channel = useAlpha ? 4 : 3;
+            channel = monochrome ? 1 : channel;
+            var pixelsLength = pixels.Length;
+            var arraySize = channel * pixelsLength;
+            float[] array = new float[arraySize];
+            if (!monochrome)
+            {
+                Parallel.For(0, channel, (int channelIdx) =>
+                {
+                    for (int i = 0; i < pixelsLength; i++)
+                    {
+                        array[i + channelIdx * pixelsLength] = pixels[i][channelIdx];
+                    }
+                });
+            }
+            else
+            {
+                for (int i = 0; i < pixelsLength; i++)
+                {
+                    array[i] = pixels[i].grayscale;
+                }
+            }
+            return array;
+        }
+
+        /// <summary>
+        /// Convert color to greyscale using formula found below
+        /// http://www.poynton.com/notes/colour_and_gamma/ColorFAQ.html
+        /// </summary>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        public static double ToGreyScale(this Color32 color)
+        {
+            return (0.2125 * color.r) + (0.7154 * color.g) + (0.0721 * color.b);
+        }
 
     }
 
