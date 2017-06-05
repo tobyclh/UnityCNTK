@@ -77,7 +77,7 @@
 - cusparse64_80.dll
 - nvml.dll 
 5. Copy Cntk.Core.Managed-2.0rc3.dll to this project file, under Assets/UnityCNTK/Plugins
-6. Run the webcam scene (and see how it doesn't work because we did not implement the correct preprocessing, but 
+6. Run the webcam scene (and see how it doesn't work because we did not implement the correct preprocessing, but the evaluation does work
 
 
 ### Technical Background
