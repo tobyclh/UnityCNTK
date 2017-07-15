@@ -2,7 +2,10 @@
 #### Deep learning framework for Unity, backed by CNTK
 ##### Unslash your creativity, built for production
 
-#### 50% Off for new indie studio
+## Update 15/7/2017
+Recently I have not been updating this because of personal matter and the fact that Microsoft is considering to give full support 
+including training etc. on .NET framework. Will start to work on this again as soon as I can get a more clear vision about how the base framework is heading to (rather confusing now if you look at the issue in CNTK .NET. If you need something rn, let me know.
+
 
 ### Planned Features
 1. Drag and drop Solution
